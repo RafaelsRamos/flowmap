@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://flowmap.example/schemas/flow/v1.json",
+  "$id": "https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/flow.schema.json",
   "title": "Flowmap flow file",
   "description": "Defines what can happen in a product flow and how to recognise evidence of it in logs. Holds rules for finding evidence, never the logs themselves.",
   "type": "object",

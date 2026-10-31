@@ -8,7 +8,7 @@ The schema is `packages/schema/flow.schema.json` (JSON Schema draft 2020-12). Fo
 autocomplete in YAML add, as the first line:
 
 ```yaml
-# yaml-language-server: $schema=<path or URL of flow.schema.json>
+# yaml-language-server: $schema=https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/flow.schema.json
 ```
 
 ## Top level

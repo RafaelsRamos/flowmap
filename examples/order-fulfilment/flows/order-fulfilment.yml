@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../../packages/schema/flow.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/flow.schema.json
 schemaVersion: 1
 flow: order-fulfilment
 description: From order placement to delivery
