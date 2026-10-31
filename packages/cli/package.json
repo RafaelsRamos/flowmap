@@ -2,7 +2,7 @@
   "name": "flowmap",
   "version": "0.0.0",
   "license": "Apache-2.0",
-  "description": "Flowmap command-line tool: validate flow files",
+  "description": "Flowmap command-line tool: validate flow files, trace an instance through logs",
   "type": "module",
   "bin": {
     "flowmap": "dist/index.js"
@@ -11,6 +11,7 @@
   "types": "dist/run.d.ts",
   "files": ["dist"],
   "dependencies": {
+    "@flowmap/adapters": "*",
     "@flowmap/core": "*"
   }
 }
