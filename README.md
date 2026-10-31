@@ -6,14 +6,14 @@ single real instance did using its logs as evidence. The full plan lives in the
 
 | Step | What | Status |
 | --- | --- | --- |
-| 1 | Flow schema and validator (`flowmap validate`) | in progress, see below |
+| 1 | Flow schema and validator (`flowmap validate`) | done |
 | 2 | Viewer (plus run schema) | not started |
 | 3 | Deterministic log overlay | not started |
 | 4 | Agent analysis | not started |
 | 5 | CI drift check (`flowmap check`) | not started |
 | 6 | MCP server | not started |
 
-## Step 1: validate a flow
+## Step 1: validate a flow (done)
 
 ```bash
 npm install
