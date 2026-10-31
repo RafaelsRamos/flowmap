@@ -2,7 +2,7 @@
 
 A flow file is YAML or JSON (both parse to the same model) kept in the product repo, usually under
 `flows/`. It describes what *can* happen and how to recognise evidence of it in logs. It never
-contains logs. See `examples/order-fulfilment/flows/order-fulfilment.yml`.
+contains logs; what one instance did is a [run document](run-format.md). See `examples/order-fulfilment/flows/order-fulfilment.yml`.
 
 The schema is `packages/schema/flow.schema.json` (JSON Schema draft 2020-12). For editor
 autocomplete in YAML add, as the first line:
@@ -60,6 +60,8 @@ Nodes without `evidence` are allowed: they render but cannot be confirmed from l
 `from`, `to` (node ids), optional `label` and `when` (the event that triggers the transition).
 
 ## Reserved for later
+
+(The viewer has no subflow drill-down yet either; see [viewer.md](viewer.md).)
 
 These are rejected today with a "reserved for a future version" message so files written now stay
 valid when the features arrive: top-level `subflows`; on nodes `subflow`, `fork`, `join`.

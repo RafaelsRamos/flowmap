@@ -7,7 +7,7 @@ single real instance did using its logs as evidence. The full plan lives in the
 | Step | What | Status |
 | --- | --- | --- |
 | 1 | Flow schema and validator (`flowmap validate`) | done |
-| 2 | Viewer (plus run schema) | not started |
+| 2 | Viewer (plus run schema) | done |
 | 3 | Deterministic log overlay | not started |
 | 4 | Agent analysis | not started |
 | 5 | CI drift check (`flowmap check`) | not started |
@@ -34,21 +34,37 @@ flows-broken/unknown-property.yml:21:5  error  unknown property "servce" in node
 Add `--json` for machine-readable output. Exit codes: `0` no errors (warnings allowed), `1`
 validation errors, `2` usage or I/O error.
 
+## Step 2: view a flow and a run (done)
+
+```bash
+npm run build
+npm run dev -w @flowmap/viewer     # then open http://localhost:5173/?example
+```
+
+The viewer renders the flow as a graph, overlays a run document (statuses, extracted fields, an
+evidence timeline, observed and unexpected transitions), and has a detail panel, search and a
+path-finder between any two steps. Drop a folder on it, or point it at a public GitHub repo. See
+[docs/viewer.md](docs/viewer.md) and [docs/run-format.md](docs/run-format.md). Sample runs (a
+complete order with `retry` and `not home` loops, a stuck order, an unexpected transition) are in
+`examples/order-fulfilment/flows/examples/`.
+
 ## Layout
 
 ```
 packages/
-  schema/   flow.schema.json (JSON Schema 2020-12) and a tiny module exporting it
-  core/     parse + validate: pure functions, no I/O
+  schema/   flow.schema.json and run.schema.json (JSON Schema 2020-12) and a tiny module exporting them
+  core/     parse + validate flows and runs: pure functions, no I/O
   cli/      the `flowmap` command (all file I/O lives here)
+  viewer/   Vite + React + React Flow + ELK static web app
 examples/
   order-fulfilment/
     flows/          the valid example flow
-    flows-broken/   one deliberately broken file per validator rule
-docs/       flow format reference, AGENTS.md snippet
+    flows/examples/ hand-written sample runs (*.run.json)
+    flows-broken/   one deliberately broken file per validator rule (flows and runs)
+docs/       flow and run format references, viewer guide, AGENTS.md snippet
 ```
 
-`viewer/`, `adapters/`, `mcp/` and `action/` from the plan arrive with their steps.
+`adapters/`, `mcp/` and `action/` from the plan arrive with their steps.
 
 ## Develop
 
@@ -58,6 +74,6 @@ npm test        # builds, then runs vitest
 
 Licensed under [Apache-2.0](LICENSE).
 
-See [docs/flow-format.md](docs/flow-format.md) for the file format and every validator rule, and
+See [docs/flow-format.md](docs/flow-format.md) for the flow file format and every validator rule, and
 [docs/agents-snippet.md](docs/agents-snippet.md) for the text product repos add to `AGENTS.md` /
 `CLAUDE.md`.
