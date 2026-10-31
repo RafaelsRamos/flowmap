@@ -1,6 +1,7 @@
 {
   "name": "@flowmap/core",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "description": "Pure parse and validate functions for Flowmap flow files (no I/O)",
   "type": "module",
   "main": "dist/index.js",

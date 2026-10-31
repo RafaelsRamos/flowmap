@@ -1,6 +1,7 @@
 {
   "name": "flowmap",
   "version": "0.0.0",
+  "license": "Apache-2.0",
   "description": "Flowmap command-line tool: validate flow files",
   "type": "module",
   "bin": {

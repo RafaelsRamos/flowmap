@@ -56,6 +56,8 @@ docs/       flow format reference, AGENTS.md snippet
 npm test        # builds, then runs vitest
 ```
 
+Licensed under [Apache-2.0](LICENSE).
+
 See [docs/flow-format.md](docs/flow-format.md) for the file format and every validator rule, and
 [docs/agents-snippet.md](docs/agents-snippet.md) for the text product repos add to `AGENTS.md` /
 `CLAUDE.md`.
