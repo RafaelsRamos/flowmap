@@ -1,0 +1,22 @@
+{
+  "name": "flowmap-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "test": "npm run build && vitest run",
+    "validate:examples": "npm run build && node packages/cli/dist/index.js validate examples/order-fulfilment/flows"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.7"
+  }
+}

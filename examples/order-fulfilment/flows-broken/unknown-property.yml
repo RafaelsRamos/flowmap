@@ -1,0 +1,41 @@
+# BROKEN on purpose: typo in a node property
+schemaVersion: 1
+flow: order-fulfilment
+correlationKey: orderId
+start: order-placed
+end: [delivered]
+
+nodes:
+  - id: order-placed
+    label: Order placed
+    service: orders-api
+    evidence:
+      source: orders-api
+      match:
+        event: [order.placed]
+        correlate: attributes.order_id
+      outcome:
+        success: order.placed
+  - id: payment
+    label: Payment
+    servce: payments-api
+    code: src/payments/ChargeHandler.kt#charge
+    evidence:
+      source: payments-api
+      match:
+        event: [payment.attempted, payment.declined, payment.approved]
+        correlate: attributes.order_id
+      outcome:
+        success: payment.approved
+        failure: payment.declined
+      display:
+        Amount: attributes.amount
+        Attempts: count(payment.attempted)
+  - id: delivered
+    label: Delivered
+    service: delivery
+
+edges:
+  - { from: order-placed, to: payment }
+  - { from: payment, to: payment, label: retry, when: payment.declined }
+  - { from: payment, to: delivered, label: paid, when: payment.approved }

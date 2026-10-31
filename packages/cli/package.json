@@ -1,0 +1,15 @@
+{
+  "name": "flowmap",
+  "version": "0.0.0",
+  "description": "Flowmap command-line tool: validate flow files",
+  "type": "module",
+  "bin": {
+    "flowmap": "dist/index.js"
+  },
+  "main": "dist/run.js",
+  "types": "dist/run.d.ts",
+  "files": ["dist"],
+  "dependencies": {
+    "@flowmap/core": "*"
+  }
+}

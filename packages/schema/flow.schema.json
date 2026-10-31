@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flowmap.example/schemas/flow/v1.json",
+  "title": "Flowmap flow file",
+  "description": "Defines what can happen in a product flow and how to recognise evidence of it in logs. Holds rules for finding evidence, never the logs themselves.",
+  "type": "object",
+  "required": ["schemaVersion", "flow", "correlationKey", "start", "end", "nodes", "edges"],
+  "additionalProperties": false,
+  "x-reservedProperties": ["subflows"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional schema URL, for JSON files that want editor autocomplete."
+    },
+    "schemaVersion": {
+      "const": 1,
+      "description": "Version of this schema. Only 1 exists.",
+      "x-message": "must be 1, the only schema version this validator understands"
+    },
+    "flow": {
+      "$ref": "#/$defs/identifier",
+      "description": "Stable name of the flow. Used by the CLI (`flowmap trace <flow>`) and in run documents."
+    },
+    "description": {
+      "type": "string",
+      "description": "One line saying what the flow covers."
+    },
+    "correlationKey": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+      "x-message": "must be a plain name such as orderId (letters, digits and underscores)",
+      "description": "Name of the identifier that ties log events of one instance together, for example orderId."
+    },
+    "start": {
+      "$ref": "#/$defs/identifier",
+      "description": "Id of the node every instance begins at."
+    },
+    "end": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/identifier" },
+      "description": "Ids of the terminal nodes, where an instance is considered finished."
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/node" }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/edge" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "x-message": "must be lowercase kebab-case (letters, digits and single hyphens), for example payment-retry"
+    },
+    "eventName": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]*$",
+      "x-message": "must be an event name such as payment.declined (letters, digits and _ . : -)"
+    },
+    "eventPath": {
+      "type": "string",
+      "pattern": "^(?:attributes(?:\\.[A-Za-z_][A-Za-z0-9_-]*)+|ts|event)$",
+      "x-message": "must be a path into a log event: attributes.<name>[.<name>...], ts or event"
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "x-reservedProperties": ["subflow", "fork", "join"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier",
+          "description": "Stable id. Renaming a label never changes it, so history and links survive."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name shown in the viewer."
+        },
+        "description": { "type": "string" },
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Service or component that owns this step."
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[^\\s#]+(?:#[^\\s#]+)?$",
+          "x-message": "must be a code anchor of the form path/to/file.ext or path/to/file.ext#symbol, without spaces",
+          "description": "Anchor into the source: path#symbol. The CI drift check (step 5) verifies it still exists."
+        },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Rules for recognising this node in logs. Nodes without evidence render but cannot be confirmed.",
+      "required": ["source", "match"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Log source (service or stream) the events come from."
+        },
+        "match": {
+          "type": "object",
+          "required": ["event", "correlate"],
+          "additionalProperties": false,
+          "properties": {
+            "event": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/eventName" },
+              "description": "Event names that belong to this node."
+            },
+            "correlate": {
+              "$ref": "#/$defs/eventPath",
+              "description": "Where the correlation key sits inside a log event."
+            }
+          }
+        },
+        "outcome": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "description": "Maps events to node status. Each event must also appear in match.event.",
+          "properties": {
+            "success": { "$ref": "#/$defs/eventName" },
+            "failure": { "$ref": "#/$defs/eventName" }
+          }
+        },
+        "display": {
+          "type": "object",
+          "minProperties": 1,
+          "description": "Fields shown in the expanded node: label -> expression. Expressions are a tiny path syntax plus count/first/last, never eval.",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^(?:(?:attributes(?:\\.[A-Za-z_][A-Za-z0-9_-]*)+|ts|event)|(?:first|last)\\((?:attributes(?:\\.[A-Za-z_][A-Za-z0-9_-]*)+|ts|event)\\)|count\\([A-Za-z0-9_][A-Za-z0-9_.:-]*\\))$",
+            "x-message": "must be a path (attributes.amount), first(path), last(path) or count(event.name)"
+          }
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "required": ["from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "$ref": "#/$defs/identifier" },
+        "to": { "$ref": "#/$defs/identifier" },
+        "label": {
+          "type": "string",
+          "description": "Shown on the edge, for example retry."
+        },
+        "when": {
+          "$ref": "#/$defs/eventName",
+          "description": "Event that triggers this transition; used to infer which edges an instance took."
+        }
+      }
+    }
+  }
+}

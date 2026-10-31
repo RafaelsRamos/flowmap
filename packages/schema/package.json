@@ -1,0 +1,16 @@
+{
+  "name": "@flowmap/schema",
+  "version": "0.0.0",
+  "description": "JSON Schema for Flowmap flow files",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./flow.schema.json": "./flow.schema.json"
+  },
+  "files": ["dist", "flow.schema.json"]
+}

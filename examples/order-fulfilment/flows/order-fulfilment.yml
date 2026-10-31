@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../../../packages/schema/flow.schema.json
+schemaVersion: 1
+flow: order-fulfilment
+description: From order placement to delivery
+correlationKey: orderId
+start: order-placed
+end: [delivered]
+
+nodes:
+  - id: order-placed
+    label: Order placed
+    service: orders-api
+    code: src/orders/PlaceOrder.kt#handle
+    evidence:
+      source: orders-api
+      match:
+        event: [order.placed]
+        correlate: attributes.order_id
+      outcome:
+        success: order.placed
+
+  - id: stock-check
+    label: Stock check
+    service: inventory
+    evidence:
+      source: inventory
+      match:
+        event: [stock.reserved, stock.unavailable]
+        correlate: attributes.order_id
+      outcome:
+        success: stock.reserved
+        failure: stock.unavailable
+
+  - id: payment
+    label: Payment
+    service: payments-api
+    code: src/payments/ChargeHandler.kt#charge
+    evidence:
+      source: payments-api
+      match:
+        event: [payment.attempted, payment.declined, payment.approved]
+        correlate: attributes.order_id
+      outcome:
+        success: payment.approved
+        failure: payment.declined
+      display: # fields shown in the expanded node
+        Amount: attributes.amount
+        Attempts: count(payment.attempted)
+
+  - id: pick-pack
+    label: Pick & pack
+    service: warehouse
+
+  - id: out-for-delivery
+    label: Out for delivery
+    service: delivery
+
+  - id: delivered
+    label: Delivered
+    service: delivery
+
+edges:
+  - { from: order-placed, to: stock-check }
+  - { from: order-placed, to: payment }
+  - { from: stock-check, to: pick-pack, label: reserved, when: stock.reserved }
+  - { from: payment, to: payment, label: retry, when: payment.declined }
+  - { from: payment, to: pick-pack, label: paid, when: payment.approved }
+  - { from: pick-pack, to: out-for-delivery }
+  - { from: out-for-delivery, to: out-for-delivery, label: not home, when: delivery.not_home }
+  - { from: out-for-delivery, to: delivered, label: signed, when: delivery.signed }
