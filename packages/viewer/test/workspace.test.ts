@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import { exampleFiles } from "../src/lib/example.js";
+import { observedCounts } from "../src/lib/overlay.js";
 import { buildWorkspace, runTitle, runsForFlow, type SourceFile } from "../src/lib/workspace.js";
 
 const fixture = join(import.meta.dirname, "../../../examples/order-fulfilment");
@@ -21,6 +22,20 @@ describe("buildWorkspace", () => {
     expect(workspace.problems).toEqual([]);
     expect(workspace.flows.map((f) => f.flow.flow)).toEqual(["order-fulfilment"]);
     expect(workspace.runs.map((r) => runTitle(r.run))).toEqual(["orderId 4821", "orderId 4822", "orderId 4823", "orderId 4824", "orderId 4825"]);
+  });
+
+  it("loads the runs that `flowmap trace` produces from the sample logs", () => {
+    // examples/order-fulfilment/logs/*.run.json are asserted equal to the CLI's output by the cli and adapters tests.
+    const tree = readTree(fixture).filter((file) => file.path.startsWith("flows/order-fulfilment") || file.path.endsWith(".run.json") && file.path.startsWith("logs/"));
+    const workspace = buildWorkspace(tree);
+    expect(workspace.problems).toEqual([]);
+    expect(workspace.runs.map((r) => runTitle(r.run)).sort()).toEqual(["orderId 4821", "orderId 4830", "orderId 4831"]);
+    const flow = workspace.flows[0]?.flow;
+    const retry = workspace.runs.find((r) => r.run.correlation.orderId === "4821");
+    if (!flow || !retry) throw new Error("fixture missing");
+    expect(observedCounts(flow, retry.run)).toEqual([1, 1, 1, 1, 1, 1, 1, 1]);
+    const skipped = workspace.runs.find((r) => r.run.correlation.orderId === "4831");
+    expect(skipped?.run.unexpected).toHaveLength(1);
   });
 
   it("bundles the same example into the app", () => {

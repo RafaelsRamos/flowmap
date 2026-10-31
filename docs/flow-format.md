@@ -52,7 +52,7 @@ Expressions are deliberately tiny, never `eval`:
 - `first(<path>)` / `last(<path>)`
 - `count(<event name>)` (the event must be in `match.event`)
 
-`first`/`last` taking a path is a refinement of the draft in the plan; step 3 gives them semantics.
+`first`/`last` taking a path is a refinement of the draft in the plan. A bare path means `last(path)`; [matching.md](matching.md) has the exact semantics.
 Nodes without `evidence` are allowed: they render but cannot be confirmed from logs.
 
 ## Edge

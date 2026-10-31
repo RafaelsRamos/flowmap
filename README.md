@@ -8,7 +8,7 @@ single real instance did using its logs as evidence. The full plan lives in the
 | --- | --- | --- |
 | 1 | Flow schema and validator (`flowmap validate`) | done |
 | 2 | Viewer (plus run schema) | done |
-| 3 | Deterministic log overlay | not started |
+| 3 | Deterministic log overlay (`flowmap trace`) | done |
 | 4 | Agent analysis | not started |
 | 5 | CI drift check (`flowmap check`) | not started |
 | 6 | MCP server | not started |
@@ -49,23 +49,43 @@ complete order with `retry` and `not home` loops, a stuck order, an unexpected t
 declined for good, a parcel nobody is home for) are in
 `examples/order-fulfilment/flows/examples/`.
 
+## Step 3: trace an instance from its logs (done)
+
+```bash
+npm run build
+node packages/cli/dist/index.js trace order-fulfilment --flows examples/order-fulfilment/flows \
+  --orderId 4821 --logs examples/order-fulfilment/logs/order-4821.ndjson > run.json
+```
+
+```
+✔ traced orderId 4821: 10 of 12 events matched, 0 unexpected transitions
+```
+
+The matching engine is a pure function in `@flowmap/core` (`matchRun`): flow + events + correlation
+value to a run document, no AI. Backends are adapters in `@flowmap/adapters`: NDJSON files and Loki.
+Open `run.json` in the viewer to see the path lit up. Rules: [docs/matching.md](docs/matching.md);
+backends and flags: [docs/adapters.md](docs/adapters.md). Sample logs with their expected runs
+(retry loop, stuck order, unexpected transition) are in `examples/order-fulfilment/logs/`.
+
 ## Layout
 
 ```
 packages/
   schema/   flow.schema.json and run.schema.json (JSON Schema 2020-12) and a tiny module exporting them
-  core/     parse + validate flows and runs: pure functions, no I/O
-  cli/      the `flowmap` command (all file I/O lives here)
+  core/     parse + validate flows and runs, match logs to a run: pure functions, no I/O
+  adapters/ log backends: NDJSON files, Loki (normalised events with a ref to the raw line)
+  cli/      the `flowmap` command (validate, trace)
   viewer/   Vite + React + React Flow + ELK static web app
 examples/
   order-fulfilment/
     flows/          the valid example flow
     flows/examples/ hand-written sample runs (*.run.json)
     flows-broken/   one deliberately broken file per validator rule (flows and runs)
+    logs/           sample NDJSON logs with the run each must produce (golden tests)
 docs/       flow and run format references, viewer guide, AGENTS.md snippet
 ```
 
-`adapters/`, `mcp/` and `action/` from the plan arrive with their steps.
+`mcp/` and `action/` from the plan arrive with their steps.
 
 ## Develop
 
