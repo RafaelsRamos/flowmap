@@ -22,3 +22,6 @@ export type {
   UnexpectedEdge,
   ValidationResult,
 } from "./types.js";
+export { matchRun, type MatchInput } from "./match.js";
+export { evaluateDisplay, evaluateExpression, readPath, type FieldValue } from "./expression.js";
+export type { LogEvent } from "./events.js";
