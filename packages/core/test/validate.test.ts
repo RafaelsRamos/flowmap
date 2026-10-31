@@ -113,7 +113,7 @@ describe("broken fixtures", () => {
 const flow = validateFlowSource(read("flows/order-fulfilment.yml"), "order-fulfilment.yml").flow as Flow;
 
 describe("sample runs", () => {
-  it.each(["order-4821", "order-4822", "order-4823"])("%s passes against the flow", (name) => {
+  it.each(["order-4821", "order-4822", "order-4823", "order-4824", "order-4825"])("%s passes against the flow", (name) => {
     const result = validateRunSource(read(`flows/examples/${name}.run.json`), `${name}.run.json`, { flow });
     expect(result.issues).toEqual([]);
     expect(result.ok).toBe(true);
@@ -126,6 +126,12 @@ describe("sample runs", () => {
     expect(loops).toEqual(["retry", "not home"]);
     expect(run("order-4822")?.nodes["stock-check"]?.status).toBe("failure");
     expect(run("order-4823")?.unexpected).toHaveLength(1);
+    // A card declined three times: payment failed for good after two retries.
+    expect(run("order-4824")?.nodes.payment?.status).toBe("failure");
+    expect(run("order-4824")?.edges.find((edge) => edge.label === "retry")?.observed).toBe(2);
+    // A parcel nobody was home for, three times: still out for delivery.
+    expect(run("order-4825")?.nodes["out-for-delivery"]?.status).toBe("pending");
+    expect(run("order-4825")?.edges.find((edge) => edge.label === "not home")?.observed).toBe(3);
   });
 
   it("validates without a flow too, skipping the checks that need one", () => {

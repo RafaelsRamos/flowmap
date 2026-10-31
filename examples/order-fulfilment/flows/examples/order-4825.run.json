@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/run.schema.json",
+  "schemaVersion": 1,
+  "flow": "order-fulfilment",
+  "flowRevision": "git:3f2a9c1",
+  "correlation": { "orderId": "4825" },
+  "generatedAt": "2026-10-31T16:30:00Z",
+  "nodes": {
+    "order-placed": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-30T14:00:00Z", "event": "order.placed", "msg": "Order placed", "ref": "file://orders-api.ndjson#L16" }
+      ]
+    },
+    "stock-check": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-30T14:00:03Z", "event": "stock.reserved", "msg": "Stock reserved", "ref": "file://inventory.ndjson#L12" }
+      ]
+    },
+    "payment": {
+      "status": "success",
+      "fields": { "Status": "payment.approved", "Amount": "€42.50", "Attempts": 1 },
+      "evidence": [
+        { "ts": "2026-10-30T14:00:20Z", "event": "payment.approved", "msg": "Payment approved", "ref": "file://payments-api.ndjson#L66" }
+      ]
+    },
+    "pick-pack": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-31T08:40:00Z", "event": "pack.completed", "msg": "Parcel packed", "ref": "file://warehouse.ndjson#L5" }
+      ]
+    },
+    "out-for-delivery": {
+      "status": "pending",
+      "fields": { "Not home": 3 },
+      "evidence": [
+        { "ts": "2026-10-31T09:30:00Z", "event": "delivery.dispatched", "msg": "Out for delivery", "ref": "file://delivery.ndjson#L30" },
+        { "ts": "2026-10-31T11:05:00Z", "event": "delivery.not_home", "msg": "Nobody home, will retry", "ref": "file://delivery.ndjson#L34" },
+        { "ts": "2026-10-31T13:10:00Z", "event": "delivery.not_home", "msg": "Nobody home, will retry", "ref": "file://delivery.ndjson#L41" },
+        { "ts": "2026-10-31T15:45:00Z", "event": "delivery.not_home", "msg": "Nobody home, will retry", "ref": "file://delivery.ndjson#L47" }
+      ]
+    },
+    "delivered": { "status": "not_reached" }
+  },
+  "edges": [
+    { "from": "order-placed", "to": "stock-check", "observed": 1 },
+    { "from": "order-placed", "to": "payment", "observed": 1 },
+    { "from": "stock-check", "to": "pick-pack", "label": "reserved", "observed": 1 },
+    { "from": "payment", "to": "pick-pack", "label": "paid", "observed": 1 },
+    { "from": "pick-pack", "to": "out-for-delivery", "observed": 1 },
+    { "from": "out-for-delivery", "to": "out-for-delivery", "label": "not home", "observed": 3 }
+  ],
+  "unexpected": []
+}

@@ -20,14 +20,14 @@ describe("buildWorkspace", () => {
     const workspace = buildWorkspace(readTree(join(fixture, "flows")));
     expect(workspace.problems).toEqual([]);
     expect(workspace.flows.map((f) => f.flow.flow)).toEqual(["order-fulfilment"]);
-    expect(workspace.runs.map((r) => runTitle(r.run))).toEqual(["orderId 4821", "orderId 4822", "orderId 4823"]);
+    expect(workspace.runs.map((r) => runTitle(r.run))).toEqual(["orderId 4821", "orderId 4822", "orderId 4823", "orderId 4824", "orderId 4825"]);
   });
 
   it("bundles the same example into the app", () => {
     const bundled = buildWorkspace(exampleFiles());
     expect(bundled.problems).toEqual([]);
     expect(bundled.flows).toHaveLength(1);
-    expect(bundled.runs).toHaveLength(3);
+    expect(bundled.runs).toHaveLength(5);
     expect(bundled.flows[0]?.path).toBe("flows/order-fulfilment.yml");
   });
 
@@ -35,7 +35,7 @@ describe("buildWorkspace", () => {
     const workspace = buildWorkspace(exampleFiles());
     const flow = workspace.flows[0]?.flow;
     if (!flow) throw new Error("no flow");
-    expect(runsForFlow(workspace, flow).map((r) => r.run.correlation.orderId)).toEqual(["4821", "4822", "4823"]);
+    expect(runsForFlow(workspace, flow).map((r) => r.run.correlation.orderId)).toEqual(["4821", "4822", "4824", "4825", "4823"]);
     expect(runsForFlow(workspace, { ...flow, flow: "returns" })).toEqual([]);
   });
 

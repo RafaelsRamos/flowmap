@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/run.schema.json",
+  "schemaVersion": 1,
+  "flow": "order-fulfilment",
+  "flowRevision": "git:3f2a9c1",
+  "correlation": { "orderId": "4824" },
+  "generatedAt": "2026-10-31T16:30:00Z",
+  "nodes": {
+    "order-placed": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-31T10:15:00Z", "event": "order.placed", "msg": "Order placed", "ref": "file://orders-api.ndjson#L15" }
+      ]
+    },
+    "stock-check": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-31T10:15:04Z", "event": "stock.reserved", "msg": "Stock reserved", "ref": "file://inventory.ndjson#L11" }
+      ]
+    },
+    "payment": {
+      "status": "failure",
+      "fields": { "Status": "payment.declined", "Amount": "€129.00", "Attempts": 3 },
+      "evidence": [
+        { "ts": "2026-10-31T10:15:30Z", "event": "payment.declined", "msg": "Card declined", "ref": "file://payments-api.ndjson#L52" },
+        { "ts": "2026-10-31T10:20:30Z", "event": "payment.declined", "msg": "Card declined", "ref": "file://payments-api.ndjson#L58" },
+        { "ts": "2026-10-31T10:30:30Z", "event": "payment.declined", "msg": "Card declined, giving up", "ref": "file://payments-api.ndjson#L63" }
+      ]
+    },
+    "pick-pack": { "status": "pending" },
+    "out-for-delivery": { "status": "not_reached" },
+    "delivered": { "status": "not_reached" }
+  },
+  "edges": [
+    { "from": "order-placed", "to": "stock-check", "observed": 1 },
+    { "from": "order-placed", "to": "payment", "observed": 1 },
+    { "from": "stock-check", "to": "pick-pack", "label": "reserved", "observed": 1 },
+    { "from": "payment", "to": "payment", "label": "retry", "observed": 2 }
+  ],
+  "unexpected": []
+}

@@ -45,7 +45,8 @@ The viewer renders the flow as a graph, overlays a run document (statuses, extra
 evidence timeline, observed and unexpected transitions), and has a detail panel, search and a
 path-finder between any two steps. Drop a folder on it, or point it at a public GitHub repo. See
 [docs/viewer.md](docs/viewer.md) and [docs/run-format.md](docs/run-format.md). Sample runs (a
-complete order with `retry` and `not home` loops, a stuck order, an unexpected transition) are in
+complete order with `retry` and `not home` loops, a stuck order, an unexpected transition, a payment
+declined for good, a parcel nobody is home for) are in
 `examples/order-fulfilment/flows/examples/`.
 
 ## Layout

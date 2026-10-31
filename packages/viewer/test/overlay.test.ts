@@ -25,6 +25,12 @@ describe("observedCounts", () => {
     expect(observedCounts(flow, run("order-4822"))).toEqual([1, 1, 0, 0, 0, 0, 0, 0]);
   });
 
+  it("counts repeated loops", () => {
+    const counts = observedCounts(flow, run("order-4824"));
+    expect(counts[3]).toBe(2); // retry
+    expect(observedCounts(flow, run("order-4825"))[6]).toBe(3); // not home
+  });
+
   it("tells parallel edges apart by label", () => {
     const parallel: Flow = {
       ...flow,
