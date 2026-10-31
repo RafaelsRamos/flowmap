@@ -9,6 +9,7 @@ end: [delivered]
 nodes:
   - id: order-placed
     label: Order placed
+    description: The customer submits the cart and an order is created.
     service: orders-api
     code: src/orders/PlaceOrder.kt#handle
     evidence:
@@ -21,7 +22,9 @@ nodes:
 
   - id: stock-check
     label: Stock check
+    description: Reserves the ordered items in the warehouse inventory.
     service: inventory
+    code: src/inventory/ReserveStock.kt#reserve
     evidence:
       source: inventory
       match:
@@ -33,6 +36,7 @@ nodes:
 
   - id: payment
     label: Payment
+    description: Charges the customer's card; a declined card is retried.
     service: payments-api
     code: src/payments/ChargeHandler.kt#charge
     evidence:
@@ -44,20 +48,48 @@ nodes:
         success: payment.approved
         failure: payment.declined
       display: # fields shown in the expanded node
+        Status: last(event)
         Amount: attributes.amount
         Attempts: count(payment.attempted)
 
   - id: pick-pack
     label: Pick & pack
+    description: Warehouse staff pick the reserved items and pack the parcel.
     service: warehouse
+    code: src/warehouse/PackOrder.kt#pack
+    evidence:
+      source: warehouse
+      match:
+        event: [pack.completed]
+        correlate: attributes.order_id
+      outcome:
+        success: pack.completed
 
   - id: out-for-delivery
     label: Out for delivery
+    description: A courier carries the parcel to the customer; if nobody is home it is tried again.
     service: delivery
+    evidence:
+      source: delivery
+      match:
+        event: [delivery.dispatched, delivery.not_home, delivery.signed]
+        correlate: attributes.order_id
+      outcome:
+        success: delivery.dispatched
+      display:
+        Not home: count(delivery.not_home)
 
   - id: delivered
     label: Delivered
+    description: The customer signs for the parcel.
     service: delivery
+    evidence:
+      source: delivery
+      match:
+        event: [delivery.signed]
+        correlate: attributes.order_id
+      outcome:
+        success: delivery.signed
 
 edges:
   - { from: order-placed, to: stock-check }

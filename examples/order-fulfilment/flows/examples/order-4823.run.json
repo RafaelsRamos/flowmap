@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/run.schema.json",
+  "schemaVersion": 1,
+  "flow": "order-fulfilment",
+  "flowRevision": "git:3f2a9c1",
+  "correlation": { "orderId": "4823" },
+  "generatedAt": "2026-10-31T10:12:00Z",
+  "nodes": {
+    "order-placed": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-31T09:00:00Z", "event": "order.placed", "msg": "Order placed", "ref": "file://orders-api.ndjson#L14" }
+      ]
+    },
+    "stock-check": {
+      "status": "success",
+      "evidence": [
+        { "ts": "2026-10-31T09:00:04Z", "event": "stock.reserved", "msg": "Stock reserved", "ref": "file://inventory.ndjson#L9" }
+      ]
+    },
+    "payment": {
+      "status": "success",
+      "fields": { "Status": "payment.approved", "Amount": "€84.90", "Attempts": 2 },
+      "evidence": [
+        { "ts": "2026-10-31T09:03:00Z", "event": "payment.declined", "msg": "Card declined", "ref": "file://payments-api.ndjson#L44" },
+        { "ts": "2026-10-31T09:05:00Z", "event": "payment.approved", "msg": "Payment approved", "ref": "file://payments-api.ndjson#L47" }
+      ]
+    },
+    "pick-pack": { "status": "pending" },
+    "out-for-delivery": { "status": "not_reached" },
+    "delivered": { "status": "not_reached" }
+  },
+  "edges": [
+    { "from": "order-placed", "to": "stock-check", "observed": 1 },
+    { "from": "order-placed", "to": "payment", "observed": 1 },
+    { "from": "stock-check", "to": "pick-pack", "label": "reserved", "observed": 1 },
+    { "from": "payment", "to": "payment", "label": "retry", "observed": 1 },
+    { "from": "payment", "to": "pick-pack", "label": "paid", "observed": 1 }
+  ],
+  "unexpected": [
+    { "from": "stock-check", "to": "payment", "ts": "2026-10-31T09:02:00Z", "ref": "file://inventory.ndjson#L10" }
+  ]
+}

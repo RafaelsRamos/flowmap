@@ -20,7 +20,7 @@ export interface ParsedSource {
  * Parses YAML or JSON text into the same plain data model. JSON is parsed as
  * YAML (a near-superset), so both formats report positions the same way.
  */
-export function parseSource(text: string): ParsedSource {
+export function parseSource(text: string, expected = "a flow definition"): ParsedSource {
   const lineCounter = new LineCounter();
   const doc = parseDocument(text, { lineCounter, uniqueKeys: true });
   const locate = makeLocator(doc, lineCounter);
@@ -49,7 +49,7 @@ export function parseSource(text: string): ParsedSource {
         {
           severity: "error",
           code: "empty-file",
-          message: "file is empty; expected a flow definition",
+          message: `file is empty; expected ${expected}`,
           path: "",
           line: position.line,
           column: position.col,

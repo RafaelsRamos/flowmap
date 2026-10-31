@@ -64,3 +64,53 @@ export interface Position {
   line: number;
   column: number;
 }
+
+export type RunStatus = "success" | "failure" | "pending" | "not_reached";
+
+/** Shape of a run document once it has passed structural validation. */
+export interface Run {
+  schemaVersion: 1;
+  flow: string;
+  flowRevision?: string;
+  correlation: Record<string, string>;
+  generatedAt: string;
+  nodes: Record<string, RunNode>;
+  edges: ObservedEdge[];
+  unexpected: UnexpectedEdge[];
+}
+
+export interface RunNode {
+  status: RunStatus;
+  fields?: Record<string, string | number | boolean | null>;
+  evidence?: EvidenceEntry[];
+}
+
+export interface EvidenceEntry {
+  ts: string;
+  event: string;
+  msg?: string;
+  ref?: string;
+}
+
+export interface ObservedEdge {
+  from: string;
+  to: string;
+  label?: string;
+  observed: number;
+}
+
+export interface UnexpectedEdge {
+  from: string;
+  to: string;
+  ts?: string;
+  ref?: string;
+}
+
+export interface RunValidationResult {
+  file: string;
+  /** True when there are no errors (warnings do not count). */
+  ok: boolean;
+  issues: Issue[];
+  /** The parsed run, present only when `ok` is true. */
+  run?: Run;
+}

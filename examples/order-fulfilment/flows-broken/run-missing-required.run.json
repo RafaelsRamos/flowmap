@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "flow": "order-fulfilment",
+  "flowRevision": "git:3f2a9c1",
+  "correlation": {
+    "orderId": "4821"
+  },
+  "nodes": {
+    "order-placed": {
+      "status": "success",
+      "evidence": [
+        {
+          "ts": "2026-10-31T09:00:02Z",
+          "event": "order.placed",
+          "msg": "Order placed",
+          "ref": "file://orders-api.ndjson#L12"
+        }
+      ]
+    },
+    "stock-check": {
+      "status": "success",
+      "evidence": [
+        {
+          "ts": "2026-10-31T09:00:05Z",
+          "event": "stock.reserved",
+          "msg": "Stock reserved",
+          "ref": "file://inventory.ndjson#L7"
+        }
+      ]
+    },
+    "payment": {
+      "status": "success",
+      "fields": {
+        "Status": "payment.approved",
+        "Amount": "€84.90",
+        "Attempts": 2
+      },
+      "evidence": [
+        {
+          "ts": "2026-10-31T09:03:00Z",
+          "event": "payment.declined",
+          "msg": "Card declined",
+          "ref": "file://payments-api.ndjson#L31"
+        },
+        {
+          "ts": "2026-10-31T09:05:00Z",
+          "event": "payment.approved",
+          "msg": "Payment approved",
+          "ref": "file://payments-api.ndjson#L38"
+        }
+      ]
+    },
+    "pick-pack": {
+      "status": "success",
+      "evidence": [
+        {
+          "ts": "2026-10-31T11:20:00Z",
+          "event": "pack.completed",
+          "msg": "Parcel packed",
+          "ref": "file://warehouse.ndjson#L4"
+        }
+      ]
+    },
+    "out-for-delivery": {
+      "status": "success",
+      "fields": {
+        "Not home": 1
+      },
+      "evidence": [
+        {
+          "ts": "2026-10-31T13:10:00Z",
+          "event": "delivery.dispatched",
+          "msg": "Out for delivery",
+          "ref": "file://delivery.ndjson#L9"
+        },
+        {
+          "ts": "2026-10-31T14:45:00Z",
+          "event": "delivery.not_home",
+          "msg": "Nobody home, will retry",
+          "ref": "file://delivery.ndjson#L15"
+        },
+        {
+          "ts": "2026-10-31T15:50:00Z",
+          "event": "delivery.signed",
+          "msg": "Signed for",
+          "ref": "file://delivery.ndjson#L22"
+        }
+      ]
+    },
+    "delivered": {
+      "status": "success",
+      "evidence": [
+        {
+          "ts": "2026-10-31T15:50:00Z",
+          "event": "delivery.signed",
+          "msg": "Delivered",
+          "ref": "file://delivery.ndjson#L22"
+        }
+      ]
+    }
+  },
+  "edges": [
+    {
+      "from": "order-placed",
+      "to": "stock-check",
+      "observed": 1
+    },
+    {
+      "from": "order-placed",
+      "to": "payment",
+      "observed": 1
+    },
+    {
+      "from": "stock-check",
+      "to": "pick-pack",
+      "label": "reserved",
+      "observed": 1
+    },
+    {
+      "from": "payment",
+      "to": "payment",
+      "label": "retry",
+      "observed": 1
+    },
+    {
+      "from": "payment",
+      "to": "pick-pack",
+      "label": "paid",
+      "observed": 1
+    },
+    {
+      "from": "pick-pack",
+      "to": "out-for-delivery",
+      "observed": 1
+    },
+    {
+      "from": "out-for-delivery",
+      "to": "out-for-delivery",
+      "label": "not home",
+      "observed": 1
+    },
+    {
+      "from": "out-for-delivery",
+      "to": "delivered",
+      "label": "signed",
+      "observed": 1
+    }
+  ],
+  "unexpected": []
+}

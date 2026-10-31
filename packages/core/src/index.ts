@@ -1,15 +1,24 @@
 export { validateFlowSource } from "./validate.js";
 export { parseSource, type Locate, type ParsedSource } from "./parse.js";
-export { validateStructure, formatPath } from "./structure.js";
+export { validateRunSource } from "./run-validate.js";
+export { validateRunSemantics } from "./run-semantic.js";
+export { validateStructure, validateRunStructure, formatPath } from "./structure.js";
 export { validateSemantics } from "./semantic.js";
 export type {
+  EvidenceEntry,
   Evidence,
   Flow,
   FlowEdge,
   FlowNode,
   Issue,
+  ObservedEdge,
   PathSegment,
   Position,
+  Run,
+  RunNode,
+  RunStatus,
+  RunValidationResult,
   Severity,
+  UnexpectedEdge,
   ValidationResult,
 } from "./types.js";

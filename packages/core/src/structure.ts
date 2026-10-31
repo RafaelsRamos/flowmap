@@ -1,5 +1,5 @@
-import _Ajv2020, { type ErrorObject } from "ajv/dist/2020.js";
-import { flowSchema } from "@flowmap/schema";
+import _Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
+import { flowSchema, runSchema } from "@flowmap/schema";
 import type { Issue, PathSegment } from "./types.js";
 import type { Locate } from "./parse.js";
 
@@ -9,7 +9,8 @@ const Ajv2020 = _Ajv2020 as unknown as typeof _Ajv2020.default;
 const ajv = new Ajv2020({ allErrors: true, strict: true, verbose: true });
 // Custom annotations used by flow.schema.json for friendlier messages.
 ajv.addVocabulary(["x-message", "x-reservedProperties"]);
-const validateSchema = ajv.compile(flowSchema);
+const validateFlowSchema = ajv.compile(flowSchema);
+const validateRunSchema = ajv.compile(runSchema);
 
 /** Renders a document path the way people write it: `nodes[2].evidence.match`. */
 export function formatPath(path: readonly PathSegment[]): string {
@@ -27,13 +28,39 @@ export function formatPath(path: readonly PathSegment[]): string {
  * is a structurally valid flow; the semantic layer relies on that.
  */
 export function validateStructure(data: unknown, locate: Locate): Issue[] {
-  if (validateSchema(data)) return [];
-  const issues = (validateSchema.errors ?? []).map((error) => toIssue(error, data, locate));
+  return check(validateFlowSchema, data, locate);
+}
+
+/** Checks parsed data against the run document schema, the same way. */
+export function validateRunStructure(data: unknown, locate: Locate): Issue[] {
+  return check(validateRunSchema, data, locate);
+}
+
+function check(validate: ValidateFunction, data: unknown, locate: Locate): Issue[] {
+  if (validate(data)) return [];
+  const issues = (validate.errors ?? [])
+    // The failing key is reported by the pattern error beneath this one.
+    .filter((error) => error.keyword !== "propertyNames")
+    .map((error) => toIssue(error, data, locate));
   return dedupe(issues);
 }
 
 function toIssue(error: ErrorObject, data: unknown, locate: Locate): Issue {
   const instancePath = toSegments(error.instancePath, data);
+  // An invalid key of a map (propertyNames) is reported at the key itself.
+  if (error.propertyName !== undefined) {
+    const path = [...instancePath, error.propertyName];
+    const where = locate(path, { key: true });
+    const custom = (error.parentSchema as { "x-message"?: string } | undefined)?.["x-message"];
+    return {
+      severity: "error",
+      code: "invalid-value",
+      message: `key "${error.propertyName}" in ${subject(instancePath)} ${custom ?? plain(error)}`,
+      path: formatPath(path),
+      line: where.line,
+      column: where.column,
+    };
+  }
 
   switch (error.keyword) {
     case "required": {
