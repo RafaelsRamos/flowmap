@@ -1,0 +1,12 @@
+{"ts":"2026-10-31T09:00:02Z","source":"orders-api","event":"order.placed","msg":"Order placed","attributes":{"order_id":"4821"}}
+{"ts":"2026-10-31T09:00:05Z","source":"inventory","event":"stock.reserved","msg":"Stock reserved","attributes":{"order_id":"4821"}}
+{"ts":"2026-10-31T09:01:00Z","source":"orders-api","event":"order.placed","msg":"Order placed","attributes":{"order_id":"4999"}}
+{"ts":"2026-10-31T09:02:50Z","source":"payments-api","event":"payment.attempted","msg":"Charging card","attributes":{"order_id":"4821","amount":"€84.90"}}
+{"ts":"2026-10-31T09:03:00Z","source":"payments-api","event":"payment.declined","msg":"Card declined","attributes":{"order_id":"4821","amount":"€84.90","reason":"insufficient_funds"}}
+{"ts":"2026-10-31T09:04:50Z","source":"payments-api","event":"payment.attempted","msg":"Charging card","attributes":{"order_id":"4821","amount":"€84.90"}}
+{"ts":"2026-10-31T09:05:00Z","source":"payments-api","event":"payment.approved","msg":"Payment approved","attributes":{"order_id":"4821","amount":"€84.90"}}
+{"ts":"2026-10-31T09:05:10Z","source":"payments-api","event":"payment.approved","msg":"Payment approved","attributes":{"order_id":"4999","amount":"€12.00"}}
+{"ts":"2026-10-31T11:20:00Z","source":"warehouse","event":"pack.completed","msg":"Parcel packed","attributes":{"order_id":"4821"}}
+{"ts":"2026-10-31T13:10:00Z","source":"delivery","event":"delivery.dispatched","msg":"Out for delivery","attributes":{"order_id":"4821"}}
+{"ts":"2026-10-31T14:45:00Z","source":"delivery","event":"delivery.not_home","msg":"Nobody home, will retry","attributes":{"order_id":"4821"}}
+{"ts":"2026-10-31T15:50:00Z","source":"delivery","event":"delivery.signed","msg":"Signed for","attributes":{"order_id":"4821"}}

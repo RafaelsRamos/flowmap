@@ -75,7 +75,7 @@ nodes:
         event: [delivery.dispatched, delivery.not_home, delivery.signed]
         correlate: attributes.order_id
       outcome:
-        success: delivery.dispatched
+        success: delivery.signed
       display:
         Not home: count(delivery.not_home)
 

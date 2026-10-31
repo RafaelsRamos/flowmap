@@ -1,0 +1,4 @@
+{"ts":"2026-10-31T09:10:00Z","source":"orders-api","event":"order.placed","msg":"Order placed","attributes":{"order_id":"4830"}}
+{"ts":"2026-10-31T09:10:03Z","source":"inventory","event":"stock.reserved","msg":"Stock reserved","attributes":{"order_id":"4830"}}
+{"ts":"2026-10-31T09:10:40Z","source":"payments-api","event":"payment.attempted","msg":"Charging card","attributes":{"order_id":"4830","amount":"€19.00"}}
+{"ts":"2026-10-31T09:10:45Z","source":"payments-api","event":"payment.approved","msg":"Payment approved","attributes":{"order_id":"4830","amount":"€19.00"}}
