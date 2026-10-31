@@ -1,0 +1,26 @@
+{
+  "name": "@flowmap/viewer",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "description": "Flowmap viewer: a static web app that renders flows and overlays run documents",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:web": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@flowmap/core": "*",
+    "@xyflow/react": "^12.0.0",
+    "elkjs": "^0.10.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0"
+  }
+}

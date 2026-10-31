@@ -1,0 +1,90 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
+import { describe, expect, it } from "vitest";
+import { exampleFiles } from "../src/lib/example.js";
+import { buildWorkspace, runTitle, runsForFlow, type SourceFile } from "../src/lib/workspace.js";
+
+const fixture = join(import.meta.dirname, "../../../examples/order-fulfilment");
+
+function readTree(directory: string): SourceFile[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(directory, entry.name);
+    return entry.isDirectory()
+      ? readTree(full)
+      : [{ path: relative(fixture, full).split("\\").join("/"), text: readFileSync(full, "utf8") }];
+  });
+}
+
+describe("buildWorkspace", () => {
+  it("loads the example flow and its sample runs", () => {
+    const workspace = buildWorkspace(readTree(join(fixture, "flows")));
+    expect(workspace.problems).toEqual([]);
+    expect(workspace.flows.map((f) => f.flow.flow)).toEqual(["order-fulfilment"]);
+    expect(workspace.runs.map((r) => runTitle(r.run))).toEqual(["orderId 4821", "orderId 4822", "orderId 4823"]);
+  });
+
+  it("bundles the same example into the app", () => {
+    const bundled = buildWorkspace(exampleFiles());
+    expect(bundled.problems).toEqual([]);
+    expect(bundled.flows).toHaveLength(1);
+    expect(bundled.runs).toHaveLength(3);
+    expect(bundled.flows[0]?.path).toBe("flows/order-fulfilment.yml");
+  });
+
+  it("lists runs newest first, for the flow they belong to", () => {
+    const workspace = buildWorkspace(exampleFiles());
+    const flow = workspace.flows[0]?.flow;
+    if (!flow) throw new Error("no flow");
+    expect(runsForFlow(workspace, flow).map((r) => r.run.correlation.orderId)).toEqual(["4821", "4822", "4823"]);
+    expect(runsForFlow(workspace, { ...flow, flow: "returns" })).toEqual([]);
+  });
+
+  it("warns when two files define the same flow name", () => {
+    const text = readFileSync(join(fixture, "flows/order-fulfilment.yml"), "utf8");
+    const workspace = buildWorkspace([
+      { path: "a/order.yml", text },
+      { path: "b/order.yml", text },
+    ]);
+    expect(workspace.flows.map((f) => f.path)).toEqual(["a/order.yml", "b/order.yml"]);
+    expect(workspace.problems).toHaveLength(1);
+    expect(workspace.problems[0]).toMatchObject({ path: "b/order.yml", kind: "flow" });
+    expect(workspace.problems[0]?.issues[0]).toMatchObject({ code: "duplicate-flow-name", severity: "warning" });
+  });
+
+  it("reports the same problems as the validator for broken flows and runs", () => {
+    // warnings.yml is a valid flow with the same name as the example, so it is left out here.
+    const broken = readTree(join(fixture, "flows-broken")).filter((file) => !file.path.endsWith("/warnings.yml"));
+    const workspace = buildWorkspace([...readTree(join(fixture, "flows")), ...broken]);
+    const byPath = new Map(workspace.problems.map((p) => [p.path, p]));
+
+    const flowProblem = byPath.get("flows-broken/unknown-property.yml");
+    expect(flowProblem?.kind).toBe("flow");
+    expect(flowProblem?.issues[0]?.message).toContain('unknown property "servce"');
+
+    const runProblem = byPath.get("flows-broken/run-undeclared-edge.run.json");
+    expect(runProblem?.kind).toBe("run");
+    expect(runProblem?.issues[0]?.code).toBe("undeclared-edge");
+
+    // A run that only breaks a rule needing the flow still loads when it is a warning.
+    expect(workspace.runs.map((r) => r.path)).toContain("flows-broken/run-missing-node.run.json");
+    // The sample flow itself is untouched by the broken ones.
+    expect(workspace.flows.map((f) => f.path)).toContain("flows/order-fulfilment.yml");
+  });
+
+  it("says when a run has no flow to go with", () => {
+    const run = readFileSync(join(fixture, "flows/examples/order-4821.run.json"), "utf8");
+    const workspace = buildWorkspace([{ path: "x.run.json", text: run }]);
+    expect(workspace.runs).toEqual([]);
+    expect(workspace.problems[0]?.issues[0]).toMatchObject({ code: "no-flow-for-run", severity: "warning" });
+  });
+
+  it("ignores YAML and JSON that is not a Flowmap document, and skips node_modules", () => {
+    const workspace = buildWorkspace([
+      { path: "docker-compose.yml", text: "services:\n  web: {}\n" },
+      { path: "package.json", text: '{"name":"x"}' },
+      { path: "node_modules/pkg/flow.yml", text: "schemaVersion: 1\n" },
+      { path: "notes.md", text: "schemaVersion" },
+    ]);
+    expect(workspace).toMatchObject({ flows: [], runs: [], problems: [], ignored: 2 });
+  });
+});

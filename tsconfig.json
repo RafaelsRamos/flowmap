@@ -1,8 +1,17 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/schema" },
-    { "path": "packages/core" },
-    { "path": "packages/cli" }
+    {
+      "path": "packages/schema"
+    },
+    {
+      "path": "packages/core"
+    },
+    {
+      "path": "packages/cli"
+    },
+    {
+      "path": "packages/viewer"
+    }
   ]
 }
