@@ -1,4 +1,4 @@
-# How to read order-4840.log (a plain-text log with no structured fields)
+# How to read order-4827.log (a plain-text log with no structured fields)
 pattern: '^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) +(?<level>\w+) +\[(?<source>[\w-]+)\] (?<msg>.*)$'
 timezone: "+01:00"
 events:

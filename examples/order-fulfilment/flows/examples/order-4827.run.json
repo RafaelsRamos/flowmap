@@ -3,9 +3,9 @@
   "flow": "order-fulfilment",
   "flowRevision": "git:3f2a9c1",
   "correlation": {
-    "orderId": "4840"
+    "orderId": "4827"
   },
-  "generatedAt": "2026-10-31T16:30:00Z",
+  "generatedAt": "2026-10-31T16:30:00.000Z",
   "nodes": {
     "order-placed": {
       "status": "success",
@@ -13,9 +13,9 @@
         {
           "ts": "2026-10-31T10:00:01.120+01:00",
           "event": "order.placed",
-          "msg": "Order 4840 placed by customer c-77",
-          "ref": "file://order-4840.log#L1",
-          "raw": "2026-10-31 10:00:01,120 INFO  [orders-api] Order 4840 placed by customer c-77"
+          "msg": "Order 4827 placed by customer c-77",
+          "ref": "file://order-4827.log#L1",
+          "raw": "2026-10-31 10:00:01,120 INFO  [orders-api] Order 4827 placed by customer c-77"
         }
       ]
     },
@@ -25,9 +25,9 @@
         {
           "ts": "2026-10-31T10:00:03.900+01:00",
           "event": "stock.reserved",
-          "msg": "Stock reserved for order 4840",
-          "ref": "file://order-4840.log#L3",
-          "raw": "2026-10-31 10:00:03,900 INFO  [inventory] Stock reserved for order 4840"
+          "msg": "Stock reserved for order 4827",
+          "ref": "file://order-4827.log#L3",
+          "raw": "2026-10-31 10:00:03,900 INFO  [inventory] Stock reserved for order 4827"
         }
       ]
     },
@@ -42,30 +42,30 @@
         {
           "ts": "2026-10-31T10:00:05.010+01:00",
           "event": "payment.attempted",
-          "msg": "Charging €63.20 for order 4840",
-          "ref": "file://order-4840.log#L4",
-          "raw": "2026-10-31 10:00:05,010 INFO  [payments-api] Charging €63.20 for order 4840"
+          "msg": "Charging €63.20 for order 4827",
+          "ref": "file://order-4827.log#L4",
+          "raw": "2026-10-31 10:00:05,010 INFO  [payments-api] Charging €63.20 for order 4827"
         },
         {
           "ts": "2026-10-31T10:00:06.330+01:00",
           "event": "payment.declined",
-          "msg": "Card declined for order 4840: insufficient funds",
-          "ref": "file://order-4840.log#L5",
-          "raw": "2026-10-31 10:00:06,330 WARN  [payments-api] Card declined for order 4840: insufficient funds"
+          "msg": "Card declined for order 4827: insufficient funds",
+          "ref": "file://order-4827.log#L5",
+          "raw": "2026-10-31 10:00:06,330 WARN  [payments-api] Card declined for order 4827: insufficient funds"
         },
         {
           "ts": "2026-10-31T10:02:11.040+01:00",
           "event": "payment.attempted",
-          "msg": "Charging €63.20 for order 4840",
-          "ref": "file://order-4840.log#L9",
-          "raw": "2026-10-31 10:02:11,040 INFO  [payments-api] Charging €63.20 for order 4840"
+          "msg": "Charging €63.20 for order 4827",
+          "ref": "file://order-4827.log#L9",
+          "raw": "2026-10-31 10:02:11,040 INFO  [payments-api] Charging €63.20 for order 4827"
         },
         {
           "ts": "2026-10-31T10:02:12.250+01:00",
           "event": "payment.approved",
-          "msg": "Payment approved for order 4840",
-          "ref": "file://order-4840.log#L10",
-          "raw": "2026-10-31 10:02:12,250 INFO  [payments-api] Payment approved for order 4840"
+          "msg": "Payment approved for order 4827",
+          "ref": "file://order-4827.log#L10",
+          "raw": "2026-10-31 10:02:12,250 INFO  [payments-api] Payment approved for order 4827"
         }
       ]
     },
@@ -75,9 +75,9 @@
         {
           "ts": "2026-10-31T12:15:40.000+01:00",
           "event": "pack.completed",
-          "msg": "Parcel packed for order 4840",
-          "ref": "file://order-4840.log#L11",
-          "raw": "2026-10-31 12:15:40,000 INFO  [warehouse] Parcel packed for order 4840"
+          "msg": "Parcel packed for order 4827",
+          "ref": "file://order-4827.log#L11",
+          "raw": "2026-10-31 12:15:40,000 INFO  [warehouse] Parcel packed for order 4827"
         }
       ]
     },
@@ -90,16 +90,16 @@
         {
           "ts": "2026-10-31T14:05:00.000+01:00",
           "event": "delivery.dispatched",
-          "msg": "Courier left the depot with order 4840",
-          "ref": "file://order-4840.log#L12",
-          "raw": "2026-10-31 14:05:00,000 INFO  [delivery] Courier left the depot with order 4840"
+          "msg": "Courier left the depot with order 4827",
+          "ref": "file://order-4827.log#L12",
+          "raw": "2026-10-31 14:05:00,000 INFO  [delivery] Courier left the depot with order 4827"
         },
         {
           "ts": "2026-10-31T15:30:09.500+01:00",
           "event": "delivery.signed",
-          "msg": "Parcel for order 4840 signed for by M. Silva",
-          "ref": "file://order-4840.log#L13",
-          "raw": "2026-10-31 15:30:09,500 INFO  [delivery] Parcel for order 4840 signed for by M. Silva"
+          "msg": "Parcel for order 4827 signed for by M. Silva",
+          "ref": "file://order-4827.log#L13",
+          "raw": "2026-10-31 15:30:09,500 INFO  [delivery] Parcel for order 4827 signed for by M. Silva"
         }
       ]
     },
@@ -109,9 +109,9 @@
         {
           "ts": "2026-10-31T15:30:09.500+01:00",
           "event": "delivery.signed",
-          "msg": "Parcel for order 4840 signed for by M. Silva",
-          "ref": "file://order-4840.log#L13",
-          "raw": "2026-10-31 15:30:09,500 INFO  [delivery] Parcel for order 4840 signed for by M. Silva"
+          "msg": "Parcel for order 4827 signed for by M. Silva",
+          "ref": "file://order-4827.log#L13",
+          "raw": "2026-10-31 15:30:09,500 INFO  [delivery] Parcel for order 4827 signed for by M. Silva"
         }
       ]
     }

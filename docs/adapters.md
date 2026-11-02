@@ -65,7 +65,7 @@ UTC unless the log format sets `timezone`, and the trace says so. Lines that yie
 (stack-trace continuations, noise) are not errors: each file gets one warning counting them.
 
 For free text such as `Card declined for order 4821`, describe it in a small JSON or YAML **log format**
-file, passed with `--log-format` (see `examples/order-fulfilment/logs/text/order-4840.format.yml`):
+file, passed with `--log-format` (see `examples/order-fulfilment/logs/text/order-4827.format.yml`):
 
 ```yaml
 pattern: '^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) +(?<level>\w+) +\[(?<source>[\w-]+)\] (?<msg>.*)$'
@@ -82,7 +82,7 @@ events:                        # name an event from the message; named groups be
 | `timezone` | Zone of timestamps written without one. |
 
 ```bash
-flowmap trace order-fulfilment --orderId 4840 --logs order-4840.log --log-format order-4840.format.yml > run.json
+flowmap trace order-fulfilment --orderId 4827 --logs order-4827.log --log-format order-4827.format.yml > run.json
 ```
 
 The viewer can do the same with no CLI: *Trace from logs* in the sidebar takes files or pasted lines

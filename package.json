@@ -13,7 +13,8 @@
     "build": "tsc -b",
     "clean": "tsc -b --clean",
     "test": "npm run build && vitest run",
-    "validate:examples": "npm run build && node packages/cli/dist/index.js validate examples/order-fulfilment/flows"
+    "validate:examples": "npm run build && node packages/cli/dist/index.js validate examples/order-fulfilment/flows",
+    "examples:generate": "npm run build && node scripts/generate-example-runs.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

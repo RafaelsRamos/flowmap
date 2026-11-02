@@ -16,16 +16,15 @@ async function cli(args: string[], extra: Partial<Io> = {}) {
   return { code, stdout, stderr };
 }
 
-const golden = (order: string) => JSON.parse(readFileSync(join(repo, logs, `order-${order}.run.json`), "utf8"));
-const withNow = (document: { generatedAt: string }) => ({ ...document, generatedAt: NOW.toISOString() });
+const golden = (order: string) => JSON.parse(readFileSync(join(repo, flows, `examples/order-${order}.run.json`), "utf8"));
 const trace = (extra: string[]) => ["trace", "order-fulfilment", "--flows", flows, "--flow-revision", "git:3f2a9c1", ...extra];
 
 describe("flowmap trace", () => {
   it("prints exactly the expected run document for the sample logs", async () => {
-    for (const order of ["4821", "4830", "4831"]) {
+    for (const order of ["4821", "4826", "4823"]) {
       const { code, stdout, stderr } = await cli(trace(["--orderId", order, "--logs", `${logs}/order-${order}.ndjson`]));
       expect(code).toBe(0);
-      expect(JSON.parse(stdout)).toEqual(withNow(golden(order)));
+      expect(JSON.parse(stdout)).toEqual(golden(order));
       expect(stdout.endsWith("}\n")).toBe(true);
       expect(stderr).toContain(`✔ traced orderId ${order}`);
     }
@@ -33,16 +32,16 @@ describe("flowmap trace", () => {
 
   it("reads a plain-text .log with a --log-format file, and keeps the raw lines", async () => {
     const text = `${logs}/text`;
-    const { code, stdout, stderr } = await cli(trace(["--orderId", "4840", "--logs", `${text}/order-4840.log`, "--log-format", `${text}/order-4840.format.yml`]));
+    const { code, stdout, stderr } = await cli(trace(["--orderId", "4827", "--logs", `${text}/order-4827.log`, "--log-format", `${text}/order-4827.format.yml`]));
     expect(code).toBe(0);
-    expect(JSON.parse(stdout)).toEqual(withNow(golden("4840")));
+    expect(JSON.parse(stdout)).toEqual(golden("4827"));
     expect(stderr).toContain("3 lines carried no usable event");
   });
 
   it("reads key=value and JSON-prefixed .log lines with no format file, naming the source from --source or the file", async () => {
-    const { code, stdout } = await cli(trace(["--orderId", "4841", "--logs", `${logs}/text/order-4841.log`]));
+    const { code, stdout } = await cli(trace(["--orderId", "4824", "--logs", `${logs}/text/order-4824.log`]));
     expect(code).toBe(0);
-    expect(JSON.parse(stdout)).toEqual(withNow(golden("4841")));
+    expect(JSON.parse(stdout)).toEqual(golden("4824"));
   });
 
   it("--no-raw leaves the raw lines out", async () => {
@@ -52,16 +51,16 @@ describe("flowmap trace", () => {
   });
 
   it("reports a broken --log-format file as a usage error", async () => {
-    const bad = await cli(trace(["--orderId", "1", "--logs", `${logs}/text/order-4840.log`, "--log-format", `${logs}/text/order-4840.log`]));
+    const bad = await cli(trace(["--orderId", "1", "--logs", `${logs}/text/order-4827.log`, "--log-format", `${logs}/text/order-4827.log`]));
     expect(bad.code).toBe(2);
-    expect(bad.stderr).toContain("order-4840.log:");
+    expect(bad.stderr).toContain("order-4827.log:");
     expect((await cli(trace(["--orderId", "1", "--logs", "x", "--log-format", "nope.yml"]))).stderr).toContain("cannot read the log format");
   });
 
   it("keeps stdout clean for redirection: the summary goes to stderr", async () => {
-    const { stdout, stderr } = await cli(trace(["--orderId", "4831", "--logs", `${logs}/order-4831.ndjson`]));
+    const { stdout, stderr } = await cli(trace(["--orderId", "4823", "--logs", `${logs}/order-4823.ndjson`]));
     expect(() => JSON.parse(stdout)).not.toThrow();
-    expect(stderr).toBe("✔ traced orderId 4831: 5 of 5 events matched, 1 unexpected transition\n");
+    expect(stderr).toBe("✔ traced orderId 4823: 5 of 5 events matched, 1 unexpected transition\n");
   });
 
   it("output passes validateRunSource against the flow", async () => {
@@ -72,10 +71,10 @@ describe("flowmap trace", () => {
 
   it("accepts a flow file path and --id instead of the key flag, and several --logs files", async () => {
     const { code, stdout } = await cli([
-      "trace", `${flows}/order-fulfilment.yml`, "--id", "4830", "--logs", `${logs}/order-4821.ndjson`, "--logs", `${logs}/order-4830.ndjson`,
+      "trace", `${flows}/order-fulfilment.yml`, "--id", "4826", "--logs", `${logs}/order-4821.ndjson`, "--logs", `${logs}/order-4826.ndjson`,
     ]);
     expect(code).toBe(0);
-    expect(JSON.parse(stdout).correlation).toEqual({ orderId: "4830" });
+    expect(JSON.parse(stdout).correlation).toEqual({ orderId: "4826" });
   });
 
   it("--json wraps the run with a summary and warnings, like validate's structured output", async () => {
@@ -85,7 +84,7 @@ describe("flowmap trace", () => {
     expect(report.ok).toBe(true);
     expect(report.summary).toEqual({ eventsRead: 12, eventsMatched: 10, unexpected: 0 });
     expect(report.warnings).toEqual([]);
-    expect(report.run).toEqual(withNow(golden("4821")));
+    expect(report.run).toEqual(golden("4821"));
   });
 
   it("--json reports failures as {ok:false,error} on stdout", async () => {

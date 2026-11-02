@@ -14,21 +14,21 @@ describe("traceFromLogs", () => {
   it("gives the same run as the golden file for an NDJSON export (apart from generatedAt)", () => {
     const outcome = traceFromLogs({ flow, correlationValue: "4821", logs: [log("logs/order-4821.ndjson")], now });
     if (!outcome.ok) throw new Error(outcome.error);
-    const golden = JSON.parse(read("logs/order-4821.run.json")) as object;
-    expect({ ...outcome.run, flowRevision: "git:3f2a9c1", generatedAt: "2026-10-31T16:30:00Z" }).toEqual(golden);
+    const golden = JSON.parse(read("flows/examples/order-4821.run.json")) as object;
+    expect({ ...outcome.run, flowRevision: "git:3f2a9c1" }).toEqual(golden);
     expect(outcome.summary).toEqual({ eventsRead: 12, eventsMatched: 10, unexpected: 0 });
   });
 
   it("reads a free-text .log with a custom format, keeping the raw lines", () => {
     const outcome = traceFromLogs({
       flow,
-      correlationValue: "4840",
-      logs: [log("logs/text/order-4840.log")],
-      format: read("logs/text/order-4840.format.yml"),
+      correlationValue: "4827",
+      logs: [log("logs/text/order-4827.log")],
+      format: read("logs/text/order-4827.format.yml"),
       now,
     });
     if (!outcome.ok) throw new Error(outcome.error);
-    expect(outcome.run.nodes.payment?.evidence?.[1]?.raw).toContain("Card declined for order 4840");
+    expect(outcome.run.nodes.payment?.evidence?.[1]?.raw).toContain("Card declined for order 4827");
     expect(outcome.run.nodes.payment?.fields?.Attempts).toBe(2);
     expect(outcome.warnings.join("\n")).toContain("3 lines carried no usable event");
   });

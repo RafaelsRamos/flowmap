@@ -113,7 +113,7 @@ describe("broken fixtures", () => {
 const flow = validateFlowSource(read("flows/order-fulfilment.yml"), "order-fulfilment.yml").flow as Flow;
 
 describe("sample runs", () => {
-  it.each(["order-4821", "order-4822", "order-4823", "order-4824", "order-4825"])("%s passes against the flow", (name) => {
+  it.each(["order-4821", "order-4822", "order-4823", "order-4824", "order-4825", "order-4826", "order-4827"])("%s passes against the flow", (name) => {
     const result = validateRunSource(read(`flows/examples/${name}.run.json`), `${name}.run.json`, { flow });
     expect(result.issues).toEqual([]);
     expect(result.ok).toBe(true);
@@ -129,9 +129,22 @@ describe("sample runs", () => {
     // A card declined three times: payment failed for good after two retries.
     expect(run("order-4824")?.nodes.payment?.status).toBe("failure");
     expect(run("order-4824")?.edges.find((edge) => edge.label === "retry")?.observed).toBe(2);
-    // A parcel nobody was home for, three times: still out for delivery.
+    // A parcel nobody was home for, three times: still out for delivery. The loop counts only when
+    // another event follows, so the last "not home" is not yet a second retry.
     expect(run("order-4825")?.nodes["out-for-delivery"]?.status).toBe("pending");
-    expect(run("order-4825")?.edges.find((edge) => edge.label === "not home")?.observed).toBe(3);
+    expect(run("order-4825")?.edges.find((edge) => edge.label === "not home")?.observed).toBe(2);
+    // Paid but never packed.
+    expect(run("order-4826")?.nodes["pick-pack"]?.status).toBe("pending");
+  });
+
+  it("shows the logs themselves: every piece of evidence carries its raw log line", () => {
+    for (const name of ["4821", "4822", "4823", "4824", "4825", "4826", "4827"]) {
+      const run = validateRunSource(read(`flows/examples/order-${name}.run.json`), name, { flow }).run;
+      const entries = Object.values(run?.nodes ?? {}).flatMap((node) => node.evidence ?? []);
+      expect(entries.length).toBeGreaterThan(0);
+      for (const entry of entries) expect(entry.raw, `${name} ${entry.event}`).toEqual(expect.any(String));
+      for (const edge of run?.unexpected ?? []) expect(edge.raw).toEqual(expect.any(String));
+    }
   });
 
   it("validates without a flow too, skipping the checks that need one", () => {

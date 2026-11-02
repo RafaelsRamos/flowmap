@@ -44,10 +44,10 @@ npm run dev -w @flowmap/viewer     # then open http://localhost:5173/?example
 The viewer renders the flow as a graph, overlays a run document (statuses, extracted fields, an
 evidence timeline, observed and unexpected transitions), and has a detail panel, search and a
 path-finder between any two steps. Drop a folder on it, or point it at a public GitHub repo. See
-[docs/viewer.md](docs/viewer.md) and [docs/run-format.md](docs/run-format.md). Sample runs (a
-complete order with `retry` and `not home` loops, a stuck order, an unexpected transition, a payment
-declined for good, a parcel nobody is home for) are in
-`examples/order-fulfilment/flows/examples/`.
+[docs/viewer.md](docs/viewer.md) and [docs/run-format.md](docs/run-format.md). The bundled example has seven sample runs (a
+complete order with `retry` and `not home` loops, out of stock, a skipped step, a payment declined for
+good, a parcel nobody is home for, paid but never packed, and one read from a free-text log). Each is
+generated from the sample logs in `examples/order-fulfilment/logs/` and shows the real log lines.
 
 ## Step 3: trace an instance from its logs (done)
 
@@ -66,8 +66,9 @@ value to a run document, no AI. Backends are adapters in `@flowmap/adapters`: ND
 `.log`/`.txt` files you supply by hand (also from the viewer's *Trace from logs* panel), and Loki. Each piece
 of evidence carries the actual log line.
 Open `run.json` in the viewer to see the path lit up. Rules: [docs/matching.md](docs/matching.md);
-backends and flags: [docs/adapters.md](docs/adapters.md). Sample logs with their expected runs
-(retry loop, stuck order, unexpected transition) are in `examples/order-fulfilment/logs/`.
+backends and flags: [docs/adapters.md](docs/adapters.md). The sample logs are in
+`examples/order-fulfilment/logs/` (NDJSON, plain-text `.log`); `npm run examples:generate` rebuilds
+the runs in `flows/examples/` from them, and the golden tests fail if the engine's output differs.
 
 ## Layout
 
@@ -81,9 +82,9 @@ packages/
 examples/
   order-fulfilment/
     flows/          the valid example flow
-    flows/examples/ hand-written sample runs (*.run.json)
+    flows/examples/ sample runs (*.run.json), generated from logs/ with `npm run examples:generate`
     flows-broken/   one deliberately broken file per validator rule (flows and runs)
-    logs/           sample NDJSON logs with the run each must produce (golden tests)
+    logs/           the sample logs: NDJSON, and plain-text .log with a log format (text/)
 docs/       flow and run format references, viewer guide, AGENTS.md snippet
 ```
 

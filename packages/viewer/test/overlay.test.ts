@@ -28,7 +28,7 @@ describe("observedCounts", () => {
   it("counts repeated loops", () => {
     const counts = observedCounts(flow, run("order-4824"));
     expect(counts[3]).toBe(2); // retry
-    expect(observedCounts(flow, run("order-4825"))[6]).toBe(3); // not home
+    expect(observedCounts(flow, run("order-4825"))[6]).toBe(2); // not home: three attempts, the last one not yet retried
   });
 
   it("tells parallel edges apart by label", () => {
@@ -61,7 +61,8 @@ describe("buildGraph", () => {
     const payment = nodes.find((node) => node.id === "payment")?.data;
     expect(payment?.status).toBe("success");
     expect(payment?.run?.fields).toEqual({ Status: "payment.approved", Amount: "€84.90", Attempts: 2 });
-    expect(payment?.run?.evidence?.map((entry) => entry.msg)).toEqual(["Card declined", "Payment approved"]);
+    expect(payment?.run?.evidence?.map((entry) => entry.msg)).toEqual(["Charging card", "Card declined", "Charging card", "Payment approved"]);
+    expect(payment?.run?.evidence?.[1]?.raw).toContain("payment.declined");
     expect(nodes.find((node) => node.id === "order-placed")?.data.isStart).toBe(true);
     expect(nodes.find((node) => node.id === "delivered")?.data.isEnd).toBe(true);
   });
@@ -75,8 +76,8 @@ describe("buildGraph", () => {
     const { edges } = buildGraph(flow, run("order-4823"), new Set());
     expect(edges.filter((edge) => edge.data.selfLoop).map((edge) => edge.data.label)).toEqual(["retry", "not home"]);
     const unexpected = edges.filter((edge) => edge.data.kind === "unexpected");
-    expect(unexpected.map((edge) => [edge.source, edge.target])).toEqual([["stock-check", "payment"]]);
-    expect(edges.find((edge) => edge.data.label === "retry")?.data.observed).toBe(1);
+    expect(unexpected.map((edge) => [edge.source, edge.target])).toEqual([["payment", "out-for-delivery"]]);
+    expect(edges.find((edge) => edge.data.label === "retry")?.data.observed).toBe(0);
     expect(edges.find((edge) => edge.data.label === "not home")?.data.observed).toBe(0);
   });
 
