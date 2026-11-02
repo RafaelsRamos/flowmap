@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/RafaelsRamos/flowmap/main/packages/schema/flow.schema.json
+schemaVersion: 1
+flow: sign-up                      # kebab-case; the name used by `flowmap trace sign-up`
+description: From the sign-up form to a verified account
+correlationKey: userId             # the id every step carries; one per flow
+start: form-submitted
+end: [account-verified, sign-up-abandoned]   # every terminal state, failure endings included
+
+nodes:
+  - id: form-submitted             # stable kebab-case id; renaming the label never changes it
+    label: Form submitted
+    description: The user submits the sign-up form and an unverified account is created.
+    service: accounts-api
+    code: src/accounts/SignUp.kt#handle      # path[#symbol]: must exist in the repo
+    evidence:
+      source: accounts-api                   # the log source as it appears in the log backend
+      match:
+        event: [signup.submitted]            # event names the code really logs
+        correlate: attributes.user_id        # where the id sits inside a log event
+      outcome:
+        success: signup.submitted
+
+  - id: email-sent
+    label: Verification email sent
+    description: A verification email is queued; a failed send is retried.
+    service: mailer
+    code: src/mailer/SendVerification.kt#send
+    evidence:
+      source: mailer
+      match:
+        event: [email.queued, email.failed, email.sent]
+        correlate: attributes.user_id
+      outcome:
+        success: email.sent
+        failure: email.failed
+      display:                               # tiny syntax only: path, first/last(path), count(event)
+        Attempts: count(email.queued)
+        Last result: last(event)
+
+  - id: account-verified
+    label: Account verified
+    description: The user follows the link and the account becomes active.
+    service: accounts-api
+    code: src/accounts/Verify.kt#confirm
+    evidence:
+      source: accounts-api
+      match:
+        event: [account.verified]
+        correlate: attributes.user_id
+      outcome:
+        success: account.verified
+
+  - id: sign-up-abandoned
+    label: Sign-up abandoned
+    description: The verification link expires unused.
+    service: accounts-api       # a node with no `evidence` is allowed; it cannot be confirmed from logs
+
+edges:
+  - { from: form-submitted, to: email-sent }
+  - { from: email-sent, to: email-sent, label: retry, when: email.failed }
+  - { from: email-sent, to: account-verified, label: verified, when: email.sent }
+  - { from: email-sent, to: sign-up-abandoned, label: expired }

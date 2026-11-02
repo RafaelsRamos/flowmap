@@ -69,6 +69,22 @@ backends and flags: [docs/adapters.md](docs/adapters.md). The sample logs are in
 `examples/order-fulfilment/logs/` (NDJSON, plain-text `.log`); `npm run examples:generate` rebuilds
 the runs in `flows/examples/` from them, and the golden tests fail if the engine's output differs.
 
+## Skill: build the flows for a repository
+
+`skills/flowmap-build-flows/` is an agent skill (`SKILL.md` plus a format reference and a template)
+that tells a coding agent how to read a product repo and write its `flows/*.yml`: find the flows, model
+steps, transitions and retry loops, attach evidence only from log calls it actually finds, run
+`flowmap validate`, optionally check against a sample log with `flowmap trace`, and report the gaps.
+It never invents events and does not change application code.
+
+```bash
+# Claude Code: install for one repository, or for everything (~/.claude/skills/)
+mkdir -p <product-repo>/.claude/skills && cp -R skills/flowmap-build-flows <product-repo>/.claude/skills/
+```
+
+Then ask the agent: "Build the Flowmap flows for this repository." For other agents (Cursor, Codex...),
+copy the folder anywhere in the repo and point `AGENTS.md` at `SKILL.md`.
+
 ## Layout
 
 ```
@@ -84,6 +100,7 @@ examples/
     flows/examples/ sample runs (*.run.json), generated from logs/ with `npm run examples:generate`
     flows-broken/   one deliberately broken file per validator rule (flows and runs)
     logs/           the sample logs: NDJSON, and plain-text .log with a log format (text/)
+skills/     agent skills (build the flows for a repository)
 docs/       flow and run format references, viewer guide, AGENTS.md snippet
 ```
 
