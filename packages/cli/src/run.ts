@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { validateFlowSource, type Issue, type ValidationResult } from "@flowmap/core";
 
@@ -59,7 +59,7 @@ export function run(argv: string[], io: Io): number {
 
   let files: string[];
   try {
-    files = paths.flatMap((path) => collectFiles(join(io.cwd, path), path));
+    files = paths.flatMap((path) => collectFiles(resolve(io.cwd, path), path));
   } catch (error) {
     io.stderr(`${(error as Error).message}\n`);
     return 2;
