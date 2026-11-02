@@ -29,6 +29,14 @@ pick `.log`, `.txt` or `.ndjson` files or paste lines, enter the flow's correlat
 *Trace*. Nothing is uploaded. The run joins the run list and can be downloaded as `run.json`. Plain
 text it cannot read on its own needs a custom format; see [adapters.md](adapters.md).
 
+## Choosing the git tag
+
+Under *Code links*, enter a github.com repository URL and pick one of its tags (the newest 100 are
+listed). Code links then point at that tag. When the flows were opened from that same GitHub
+repository (`?repo=` or the *Load* box), choosing a tag also re-reads the flow files at the tag, so the
+graph and the code come from one version. Choosing "Run's revision, else HEAD" goes back to the
+default. Only public repositories can be listed.
+
 ## Using it
 
 1. **Graph**: layered top-to-bottom auto-layout. Without a run it is the design; with one, each
@@ -36,12 +44,14 @@ text it cannot read on its own needs a custom format; see [adapters.md](adapters
    unexpected transitions are dashed red. Self-loops (`retry`, `not home`) are drawn beside the node.
 2. **Details**: click a step to expand it (extracted fields and the evidence timeline) and open its
    panel: description, service, log events and outcomes, the run's evidence with raw-log refs, and a
-   code link. Code links need a repository URL (sidebar, remembered in the browser); with a run that has
-   `flowRevision: git:<sha>` they point at that commit, otherwise `HEAD`.
+   code link. Code links need a repository URL (sidebar, remembered in the browser). They point at the
+   **git tag** chosen in the sidebar; without one, at the run's `flowRevision: git:<sha>`, otherwise `HEAD`.
    When a run carries `raw` lines, the panel shows the actual log line under each evidence entry (the
    `ref` stays underneath), and a step reached by an unexpected transition shows the line that revealed it.
-3. **Search**: label, id, service, description, code anchor and log event names. Matches stay lit,
-   the rest fades; click a result to centre it.
+3. **Search**: label, id, service, description, code anchor and log event names, and, with a run
+   loaded, the log lines the run recorded (raw line, message, event, extracted fields). Matching steps
+   stay lit and the rest fades; the result list shows the log line around the match. Click a result
+   to centre it.
 4. **Subflows**: not implemented. The flow schema still reserves `subflows`, `subflow`, `fork` and
    `join`. The top bar has a breadcrumb where drill-down will go; the format is to be designed with
    step 3, once the matcher's semantics are known.

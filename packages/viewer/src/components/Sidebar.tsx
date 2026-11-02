@@ -18,6 +18,10 @@ interface Props {
   onRun: (path: string | undefined) => void;
   onTraced: (run: Run) => void;
   onRepoUrl: (url: string) => void;
+  gitTag: string | undefined;
+  tags: string[];
+  tagsNote: string | undefined;
+  onTag: (tag: string | undefined) => void;
 }
 
 export function Sidebar(props: Props) {
@@ -146,7 +150,25 @@ export function Sidebar(props: Props) {
           onChange={(event) => props.onRepoUrl(event.target.value)}
           aria-label="Repository URL for code links"
         />
-        <p className="muted small">Node code anchors link into this repository.</p>
+        <label className="field-label">
+          Git tag
+          <select
+            value={props.gitTag ?? ""}
+            onChange={(event) => props.onTag(event.target.value === "" ? undefined : event.target.value)}
+            disabled={props.tags.length === 0 && props.gitTag === undefined}
+            aria-label="Git tag"
+          >
+            <option value="">{props.tags.length === 0 ? "No tags" : "Run's revision, else HEAD"}</option>
+            {(props.gitTag !== undefined && !props.tags.includes(props.gitTag) ? [props.gitTag, ...props.tags] : props.tags).map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="muted small">
+          {props.tagsNote ?? "Code links, and flows opened from GitHub, are read at this tag."}
+        </p>
       </Section>
 
       {workspace.problems.length > 0 && <Problems problems={workspace.problems} />}

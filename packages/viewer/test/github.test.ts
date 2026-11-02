@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fetchRepoFiles, parseRepoSpec, repoWebUrl } from "../src/lib/github.js";
+import { fetchRepoFiles, fetchTags, parseRepoSpec, repoWebUrl } from "../src/lib/github.js";
 
 describe("parseRepoSpec", () => {
   it("reads owner/repo in its usual forms", () => {
@@ -73,5 +73,29 @@ describe("fetchRepoFiles", () => {
     await expect(fetchRepoFiles({ owner: "acme", repo: "shop" }, missing)).rejects.toThrow("was not found");
     const limited = (async () => new Response("", { status: 403 })) as typeof fetch;
     await expect(fetchRepoFiles({ owner: "acme", repo: "shop", ref: "main" }, limited)).rejects.toThrow("rate limit");
+  });
+});
+
+describe("fetchTags", () => {
+  const respond = (status: number, body: unknown): typeof fetch =>
+    (async () => ({ ok: status === 200, status, json: async () => body })) as unknown as typeof fetch;
+
+  it("lists tag names, highest version first", async () => {
+    const names = await fetchTags(
+      { owner: "acme", repo: "shop" },
+      respond(200, [{ name: "v1.2.0" }, { name: "v1.10.0" }, { name: "v1.9.0" }, { name: "v2.0.0-rc1" }]),
+    );
+    expect(names).toEqual(["v2.0.0-rc1", "v1.10.0", "v1.9.0", "v1.2.0"]);
+  });
+
+  it("asks GitHub for the repository's tags and explains a missing repository", async () => {
+    let url = "";
+    const spy = (async (input: string) => {
+      url = input;
+      return { ok: true, status: 200, json: async () => [] };
+    }) as unknown as typeof fetch;
+    expect(await fetchTags({ owner: "acme", repo: "shop" }, spy)).toEqual([]);
+    expect(url).toBe("https://api.github.com/repos/acme/shop/tags?per_page=100");
+    await expect(fetchTags({ owner: "acme", repo: "nope" }, respond(404, {}))).rejects.toThrow("acme/nope was not found");
   });
 });

@@ -1,5 +1,5 @@
 import type { Flow, FlowNode, Run } from "@flowmap/core";
-import { codeUrl, parseCodeAnchor, revisionRef } from "../lib/code-link.js";
+import { codeRef, codeUrl, parseCodeAnchor } from "../lib/code-link.js";
 import { clockTime } from "../lib/overlay.js";
 
 const STATUS_LABEL = { success: "Success", failure: "Failed", pending: "Pending", not_reached: "Not reached" } as const;
@@ -9,13 +9,15 @@ interface Props {
   node: FlowNode;
   run: Run | undefined;
   repoUrl: string | undefined;
+  /** The git tag chosen in the sidebar, if any. */
+  gitTag: string | undefined;
   onClose: () => void;
 }
 
-export function DetailPanel({ flow, node, run, repoUrl, onClose }: Props) {
+export function DetailPanel({ flow, node, run, repoUrl, gitTag, onClose }: Props) {
   const runNode = run?.nodes[node.id];
   const evidence = node.evidence;
-  const link = node.code ? codeUrl(repoUrl, node.code, revisionRef(run?.flowRevision)) : undefined;
+  const link = node.code ? codeUrl(repoUrl, node.code, codeRef(gitTag, run?.flowRevision)) : undefined;
   const anchor = node.code ? parseCodeAnchor(node.code) : undefined;
   const unexpectedArrivals = (run?.unexpected ?? []).filter((edge) => edge.to === node.id);
 
@@ -80,21 +82,6 @@ export function DetailPanel({ flow, node, run, repoUrl, onClose }: Props) {
                 </li>
               ))}
             </ul>
-            {evidence.display && (
-              <>
-                <h4>Shown in the expanded node</h4>
-                <dl className="props">
-                  {Object.entries(evidence.display).map(([name, expression]) => (
-                    <div key={name} className="prop-row">
-                      <dt>{name}</dt>
-                      <dd>
-                        <code>{expression}</code>
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </>
-            )}
           </>
         ) : (
           <p className="muted">No evidence rules: this step is drawn but cannot be confirmed from logs.</p>

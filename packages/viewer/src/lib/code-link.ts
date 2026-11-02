@@ -40,3 +40,11 @@ export function revisionRef(flowRevision: string | undefined): string | undefine
   const match = /^git:([0-9a-f]{7,40})$/.exec(flowRevision ?? "");
   return match?.[1];
 }
+
+/**
+ * The git ref code links point at: the tag chosen in the viewer when there is
+ * one, else the commit the run was matched against, else the default (`HEAD`).
+ */
+export function codeRef(selected: string | undefined, flowRevision: string | undefined): string | undefined {
+  return selected !== undefined && selected !== "" ? selected : revisionRef(flowRevision);
+}

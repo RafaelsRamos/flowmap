@@ -78,6 +78,21 @@ export async function fetchRepoFiles(spec: RepoSpec, fetchImpl: typeof fetch = f
   return files;
 }
 
+const MAX_TAGS = 100;
+
+/** Tag names of a public repository, newest-looking first (version-aware descending order). */
+export async function fetchTags(spec: Pick<RepoSpec, "owner" | "repo">, fetchImpl: typeof fetch = fetch): Promise<string[]> {
+  const response = await fetchImpl(`https://api.github.com/repos/${spec.owner}/${spec.repo}/tags?per_page=${MAX_TAGS}`, {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+  if (!response.ok) throw new Error(describeFailure(response.status, { ...spec }));
+  const tags = (await response.json()) as { name?: string }[];
+  return tags
+    .map((tag) => tag.name)
+    .filter((name): name is string => typeof name === "string")
+    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+}
+
 async function defaultBranch(spec: RepoSpec, fetchImpl: typeof fetch): Promise<string> {
   const response = await fetchImpl(`https://api.github.com/repos/${spec.owner}/${spec.repo}`, {
     headers: { Accept: "application/vnd.github+json" },

@@ -8,7 +8,7 @@ import { Sidebar } from "./components/Sidebar.js";
 import type { StepFlowNode } from "./components/StepNode.js";
 import { exampleFiles } from "./lib/example.js";
 import { readDropped, readFileList } from "./lib/files.js";
-import { fetchRepoFiles, parseRepoSpec, repoWebUrl } from "./lib/github.js";
+import { fetchRepoFiles, fetchTags, parseRepoSpec, repoWebUrl, type RepoSpec } from "./lib/github.js";
 import { buildGraph } from "./lib/graph.js";
 import { layoutGraph, type Position } from "./lib/layout.js";
 import { searchNodes } from "./lib/search.js";
@@ -38,13 +38,21 @@ export function App() {
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState<{ id: string; token: number }>();
 
+  // The git tag the analysis is done at: code links point at it and, for a repository opened from GitHub, so do the flows.
+  const [gitTag, setGitTag] = useState<string>();
+  const [source, setSource] = useState<RepoSpec>();
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagsNote, setTagsNote] = useState<string>();
+
   const loaded = workspace.flows.find((candidate) => candidate.path === flowPath);
   const flow = loaded?.flow;
   const loadedRun = workspace.runs.find((candidate) => candidate.path === runPath);
   const run = loadedRun?.run;
 
-  const open = useCallback((files: SourceFile[]) => {
+  const open = useCallback((files: SourceFile[], from?: RepoSpec) => {
     const next = buildWorkspace(files);
+    setSource(from);
+    if (from !== undefined) setGitTag(from.ref);
     setWorkspace(next);
     const first = next.flows[0];
     setFlowPath(first?.path);
@@ -55,18 +63,13 @@ export function App() {
     setError(next.flows.length === 0 && next.problems.length === 0 ? "No flow files found. Flow files have a schemaVersion." : undefined);
   }, []);
 
-  const openRepo = useCallback(
-    async (input: string) => {
-      const spec = parseRepoSpec(input);
-      if (spec === undefined) {
-        setError("Enter a GitHub repository such as github.com/owner/repo.");
-        return;
-      }
+  const openSpec = useCallback(
+    async (spec: RepoSpec) => {
       setBusy(true);
       setError(undefined);
       try {
         const files = await fetchRepoFiles(spec);
-        open(files);
+        open(files, spec);
         setRepoUrl((current) => current || repoWebUrl(spec));
       } catch (failure) {
         setError(failure instanceof Error ? failure.message : String(failure));
@@ -76,6 +79,60 @@ export function App() {
     },
     [open],
   );
+
+  const openRepo = useCallback(
+    async (input: string) => {
+      const spec = parseRepoSpec(input);
+      if (spec === undefined) {
+        setError("Enter a GitHub repository such as github.com/owner/repo.");
+        return;
+      }
+      await openSpec(spec);
+    },
+    [openSpec],
+  );
+
+  // Choosing a tag always moves the code links. When the flows were opened from that same GitHub repository
+  // they are re-read at the tag too (the tags listed belong to the "Code links" repository).
+  const selectTag = (tag: string | undefined): void => {
+    setGitTag(tag);
+    const linked = parseRepoSpec(repoUrl);
+    const sameRepo =
+      source !== undefined && linked !== undefined && source.owner.toLowerCase() === linked.owner.toLowerCase() && source.repo.toLowerCase() === linked.repo.toLowerCase();
+    if (source !== undefined && sameRepo) {
+      const { ref: _previous, ...rest } = source;
+      void openSpec(tag === undefined ? rest : { ...rest, ref: tag });
+    }
+  };
+
+  // List the tags of the repository in the "Code links" field (public GitHub repositories only).
+  useEffect(() => {
+    const spec = parseRepoSpec(repoUrl);
+    if (spec === undefined) {
+      setTags([]);
+      setTagsNote(repoUrl.trim() === "" ? "Enter a GitHub repository URL to list its tags." : "Tags can only be listed for github.com repositories.");
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetchTags(spec).then(
+        (names) => {
+          if (cancelled) return;
+          setTags(names);
+          setTagsNote(names.length === 0 ? "This repository has no tags." : undefined);
+        },
+        (failure: unknown) => {
+          if (cancelled) return;
+          setTags([]);
+          setTagsNote(failure instanceof Error ? failure.message : String(failure));
+        },
+      );
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [repoUrl]);
 
   useEffect(() => {
     try {
@@ -165,7 +222,7 @@ export function App() {
     };
   }, [graph, viewKey]);
 
-  const hits = useMemo(() => (flow ? new Set(searchNodes(flow, query).map((hit) => hit.id)) : new Set<string>()), [flow, query]);
+  const hits = useMemo(() => (flow ? new Set(searchNodes(flow, query, run).map((hit) => hit.id)) : new Set<string>()), [flow, query, run]);
   const searching = query.trim() !== "";
 
   const nodes = useMemo<StepFlowNode[]>(() => {
@@ -215,7 +272,7 @@ export function App() {
     });
   };
 
-  const searchHits = flow && searching ? searchNodes(flow, query) : [];
+  const searchHits = flow && searching ? searchNodes(flow, query, run) : [];
   const selectedNode = flow?.nodes.find((node) => node.id === selectedId);
 
   return (
@@ -234,6 +291,10 @@ export function App() {
         onRun={selectRun}
         onTraced={addTracedRun}
         onRepoUrl={setRepoUrl}
+        gitTag={gitTag}
+        tags={tags}
+        tagsNote={tagsNote}
+        onTag={selectTag}
       />
 
       <main className="stage">
@@ -246,7 +307,7 @@ export function App() {
               <div className="search">
                 <input
                   type="search"
-                  placeholder="Search steps, services, events, code…"
+                  placeholder="Search steps, services, events, code, logs…"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={(event) => {
@@ -313,7 +374,7 @@ export function App() {
       {flow && (
         <aside className="panel">
           {selectedNode ? (
-            <DetailPanel flow={flow} node={selectedNode} run={run} repoUrl={repoUrl || undefined} onClose={() => setSelectedId(undefined)} />
+            <DetailPanel flow={flow} node={selectedNode} run={run} repoUrl={repoUrl || undefined} gitTag={gitTag} onClose={() => setSelectedId(undefined)} />
           ) : (
             <div className="panel-content">
               <h2>{flow.flow}</h2>

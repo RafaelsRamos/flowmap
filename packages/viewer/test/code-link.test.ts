@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codeUrl, normalizeRepoUrl, parseCodeAnchor, revisionRef } from "../src/lib/code-link.js";
+import { codeRef, codeUrl, normalizeRepoUrl, parseCodeAnchor, revisionRef } from "../src/lib/code-link.js";
 
 describe("code links", () => {
   it("splits an anchor into path and symbol", () => {
@@ -32,5 +32,17 @@ describe("code links", () => {
     expect(revisionRef("git:3f2a9c1")).toBe("3f2a9c1");
     expect(revisionRef("v1.2")).toBeUndefined();
     expect(revisionRef(undefined)).toBeUndefined();
+  });
+});
+
+describe("codeRef", () => {
+  it("prefers the tag chosen in the viewer, then the run's commit, then nothing (HEAD)", () => {
+    expect(codeRef("v1.4.0", "git:3f2a9c1")).toBe("v1.4.0");
+    expect(codeRef(undefined, "git:3f2a9c1")).toBe("3f2a9c1");
+    expect(codeRef("", "git:3f2a9c1")).toBe("3f2a9c1");
+    expect(codeRef(undefined, undefined)).toBeUndefined();
+    expect(codeUrl("https://github.com/acme/shop", "src/a.kt#f", codeRef("v1.4.0", "git:3f2a9c1"))).toBe(
+      "https://github.com/acme/shop/blob/v1.4.0/src/a.kt",
+    );
   });
 });

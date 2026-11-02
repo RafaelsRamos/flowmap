@@ -3,10 +3,17 @@ import { join } from "node:path";
 import { validateFlowSource, type Flow } from "@flowmap/core";
 import { describe, expect, it } from "vitest";
 import { searchNodes } from "../src/lib/search.js";
+import { validateRunSource } from "@flowmap/core";
 
 const text = readFileSync(join(import.meta.dirname, "../../../examples/order-fulfilment/flows/order-fulfilment.yml"), "utf8");
 const flow = validateFlowSource(text, "order-fulfilment.yml").flow as Flow;
 const ids = (query: string): string[] => searchNodes(flow, query).map((hit) => hit.id);
+const run = validateRunSource(
+  readFileSync(join(import.meta.dirname, "../../../examples/order-fulfilment/flows/examples/order-4821.run.json"), "utf8"),
+  "order-4821.run.json",
+  { flow },
+).run;
+const logIds = (query: string): string[] => searchNodes(flow, query, run).map((hit) => hit.id);
 
 describe("searchNodes", () => {
   it("matches labels case-insensitively", () => {
@@ -52,5 +59,33 @@ describe("searchNodes", () => {
 
   it("returns nothing for an empty query", () => {
     expect(ids("   ")).toEqual([]);
+  });
+
+  describe("log lines of the loaded run", () => {
+    it("finds the step a log line belongs to, by message, attribute or raw text", () => {
+      expect(logIds("Card declined")).toEqual(["payment"]);
+      expect(logIds("insufficient_funds")).toEqual(["payment"]);
+      expect(logIds("Nobody home")).toEqual(["out-for-delivery"]);
+      expect(logIds("pack.completed")).toEqual(["pick-pack"]);
+      expect(logIds("c-77")).toEqual([]);
+    });
+
+    it("says it matched a log and shows the line around the match", () => {
+      const hit = searchNodes(flow, "insufficient_funds", run)[0];
+      expect(hit?.reason).toMatch(/^log: .*insufficient_funds/);
+    });
+
+    it("matches nothing in logs without a run, and finds every step that logged the id", () => {
+      expect(ids("insufficient_funds")).toEqual([]);
+      expect(logIds("4821").sort()).toEqual(["delivered", "order-placed", "out-for-delivery", "payment", "pick-pack", "stock-check"]);
+    });
+
+    it("needs every word, mixing flow text and log text, and ranks log-only matches last", () => {
+      expect(logIds("payment declined")).toEqual(["payment"]);
+      expect(logIds("delivery 14:45")).toEqual(["out-for-delivery"]);
+      // "delivery" is in two labels/services; only out-for-delivery logged "Nobody home".
+      expect(logIds("delivery nobody")).toEqual(["out-for-delivery"]);
+      expect(searchNodes(flow, "signed", run).map((hit) => hit.id)).toEqual(["out-for-delivery", "delivered"]);
+    });
   });
 });
