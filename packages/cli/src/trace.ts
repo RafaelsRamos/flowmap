@@ -1,5 +1,5 @@
 import { readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { buildQuery, lokiAdapter, readLogFormat, type LogAdapter, type TextFormat } from "@flowmap/adapters";
 import { fileAdapter } from "@flowmap/adapters/node";
@@ -113,7 +113,7 @@ async function traceOrThrow(argv: string[], io: Io, warnings: string[]) {
   let adapter: LogAdapter;
   if (logs.length > 0) {
     const format = values["log-format"] === undefined ? undefined : loadLogFormat(values["log-format"], io);
-    adapter = fileAdapter(logs.map((path) => join(io.cwd, path)), {
+    adapter = fileAdapter(logs.map((path) => resolve(io.cwd, path)), {
       ...(format === undefined ? {} : { format }),
       ...(values.source === undefined ? {} : { source: values.source }),
     });
@@ -191,7 +191,7 @@ function parse(args: string[], extra: Record<string, { type: "string" }>) {
 function loadLogFormat(path: string, io: Io): TextFormat {
   let text: string;
   try {
-    text = readFileSync(join(io.cwd, path), "utf8");
+    text = readFileSync(resolve(io.cwd, path), "utf8");
   } catch {
     throw new TraceError("usage", `cannot read the log format "${path}": no such file or directory`, 2);
   }
@@ -205,7 +205,7 @@ function loadLogFormat(path: string, io: Io): TextFormat {
 }
 
 function loadFlow(ref: string, flowsDir: string, io: Io): Flow {
-  const direct = join(io.cwd, ref);
+  const direct = resolve(io.cwd, ref);
   let isFile = false;
   try {
     isFile = statSync(direct).isFile();
@@ -222,7 +222,7 @@ function loadFlow(ref: string, flowsDir: string, io: Io): Flow {
 
   let files: string[];
   try {
-    files = collectFiles(join(io.cwd, flowsDir), flowsDir);
+    files = collectFiles(resolve(io.cwd, flowsDir), flowsDir);
   } catch (error) {
     throw new TraceError("flow-not-found", `no flow "${ref}": ${(error as Error).message}`, 2);
   }

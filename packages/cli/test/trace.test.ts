@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { validateFlowSource, validateRunSource } from "@flowmap/core";
@@ -55,6 +56,18 @@ describe("flowmap trace", () => {
     expect(bad.code).toBe(2);
     expect(bad.stderr).toContain("order-4827.log:");
     expect((await cli(trace(["--orderId", "1", "--logs", "x", "--log-format", "nope.yml"]))).stderr).toContain("cannot read the log format");
+  });
+
+  it("accepts absolute paths for the flows folder, the flow file, the logs and the log format, from any directory", async () => {
+    const abs = (path: string) => join(repo, path);
+    const byName = await cli(
+      ["trace", "order-fulfilment", "--flows", abs(flows), "--orderId", "4827", "--logs", abs(`${logs}/text/order-4827.log`), "--log-format", abs(`${logs}/text/order-4827.format.yml`)],
+      { cwd: tmpdir() },
+    );
+    expect(byName.code).toBe(0);
+    expect(JSON.parse(byName.stdout).correlation).toEqual({ orderId: "4827" });
+    const byFile = await cli(["trace", abs(`${flows}/order-fulfilment.yml`), "--id", "4821", "--logs", abs(`${logs}/order-4821.ndjson`)], { cwd: tmpdir() });
+    expect(byFile.code).toBe(0);
   });
 
   it("keeps stdout clean for redirection: the summary goes to stderr", async () => {

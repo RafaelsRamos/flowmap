@@ -76,6 +76,16 @@ describe("flowmap validate", () => {
     expect(stdout).toContain("no problems in 1 file");
   });
 
+  it("accepts absolute directory and file paths", async () => {
+    const flows = join(repo, "examples/order-fulfilment/flows");
+    const dir = await cli(["validate", flows], tmpdir());
+    expect(dir.code).toBe(0);
+    expect(dir.stdout).toContain("✔ no problems in 1 file");
+
+    const file = await cli(["validate", join(repo, "examples/order-fulfilment/flows-broken/unknown-property.yml")], tmpdir());
+    expect(file.code).toBe(1);
+  });
+
   it("validates a file named explicitly even if it would be skipped in a directory", async () => {
     const { code } = await cli(["validate", "examples/order-fulfilment/flows-broken/empty-file.yml"]);
     expect(code).toBe(1);
