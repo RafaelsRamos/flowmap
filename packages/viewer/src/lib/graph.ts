@@ -22,8 +22,6 @@ export type EdgeData = {
   /** Times the loaded run took this edge; undefined without a run. */
   observed?: number;
   selfLoop: boolean;
-  /** Index into `flow.edges` for declared edges. */
-  flowIndex?: number;
 };
 
 export interface GraphNode {
@@ -40,18 +38,25 @@ export interface GraphEdge {
 
 export const NODE_WIDTH = 240;
 export const EXPANDED_WIDTH = 288;
-const HEADER_HEIGHT = 58;
-const ROW_HEIGHT = 22;
-const SECTION_GAP = 26;
+// These mirror the card's CSS (styles.css, .step): 1.5px borders, 10px padding, a 36px header, then the
+// body with a 10px gap, a 1px rule and 8px padding, rows of 20px with 2px between them, and 8px under the fields.
+const HEADER_HEIGHT = 59;
+const BODY_TOP = 19;
+const ROW_HEIGHT = 20;
+const ROW_GAP = 2;
+const FIELDS_BOTTOM = 8;
+/** The "no evidence" note shown in an expanded card without fields or timeline. */
+const EMPTY_BODY = 20;
 
-/** Height of a node card: compact, or expanded to show fields and the evidence timeline. */
+const rows = (count: number): number => (count === 0 ? 0 : count * ROW_HEIGHT + (count - 1) * ROW_GAP);
+
+/** Height of a node card: compact, or expanded to show fields and the evidence timeline, no taller than its content. */
 export function nodeSize(run: RunNode | undefined, expanded: boolean): { width: number; height: number } {
   if (!expanded) return { width: NODE_WIDTH, height: HEADER_HEIGHT };
   const fields = Object.keys(run?.fields ?? {}).length;
   const evidence = run?.evidence?.length ?? 0;
-  const body =
-    (fields > 0 ? SECTION_GAP + fields * ROW_HEIGHT : 0) + (evidence > 0 ? SECTION_GAP + evidence * ROW_HEIGHT : 0);
-  return { width: EXPANDED_WIDTH, height: HEADER_HEIGHT + Math.max(body, 16) + 12 };
+  const content = fields === 0 && evidence === 0 ? EMPTY_BODY : rows(fields) + (fields > 0 && evidence > 0 ? FIELDS_BOTTOM : 0) + rows(evidence);
+  return { width: EXPANDED_WIDTH, height: HEADER_HEIGHT + BODY_TOP + content };
 }
 
 export function buildGraph(
@@ -87,7 +92,6 @@ export function buildGraph(
         label: edge.label,
         observed: run === undefined ? undefined : counts[index],
         selfLoop: edge.from === edge.to,
-        flowIndex: index,
       },
     }),
   );

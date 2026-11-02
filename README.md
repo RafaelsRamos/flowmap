@@ -42,8 +42,7 @@ npm run dev -w @flowmap/viewer     # then open http://localhost:5173/?example
 ```
 
 The viewer renders the flow as a graph, overlays a run document (statuses, extracted fields, an
-evidence timeline, observed and unexpected transitions), and has a detail panel, search and a
-path-finder between any two steps. Drop a folder on it, or point it at a public GitHub repo. See
+evidence timeline, observed and unexpected transitions), and has a detail panel and search. Drop a folder on it, or point it at a public GitHub repo. See
 [docs/viewer.md](docs/viewer.md) and [docs/run-format.md](docs/run-format.md). The bundled example has seven sample runs (a
 complete order with `retry` and `not home` loops, out of stock, a skipped step, a payment declined for
 good, a parcel nobody is home for, paid but never packed, and one read from a free-text log). Each is

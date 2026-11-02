@@ -364,29 +364,6 @@ select {
   overflow-y: auto;
 }
 
-.tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: var(--surface);
-  z-index: 1;
-}
-
-.tabs button {
-  flex: 1;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 10px;
-  border-bottom: 2px solid transparent;
-}
-
-.tabs button[aria-selected="true"] {
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
-
 .panel-content {
   padding: 14px;
 }
@@ -505,61 +482,6 @@ select {
   word-break: break-all;
 }
 
-/* Paths */
-.path-pickers {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: end;
-  gap: 6px;
-  margin: 12px 0;
-}
-
-.path-pickers label {
-  display: grid;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.paths-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 12px 0 6px;
-}
-
-.link-button {
-  border: 0;
-  background: transparent;
-  color: var(--accent);
-  padding: 0;
-}
-
-.path-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.path-item {
-  width: 100%;
-  text-align: left;
-  display: grid;
-  gap: 6px;
-  justify-items: start;
-}
-
-.path-item.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.path-arrow {
-  color: var(--muted);
-}
-
 /* Legend */
 .legend {
   position: absolute;
@@ -634,39 +556,32 @@ select {
   transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
-.step.status-success { border-left-color: var(--success); }
-.step.status-failure { border-left-color: var(--failure); }
-.step.status-pending { border-left-color: var(--pending); }
-.step.status-not_reached { border-left-color: var(--not_reached); }
-.step.status-none { border-left-color: var(--border); }
-
 .step.status-not_reached:not(.expanded) {
   opacity: 0.72;
 }
 
 .step.expanded {
   border-color: var(--accent);
-  border-left-color: inherit;
 }
 
 .step.selected {
   box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow);
 }
 
-.step.matched,
-.step.path-on {
+.step.matched {
   border-color: var(--accent);
-}
-
-.step.path-from,
-.step.path-to {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow);
 }
 
 .step.dimmed {
   opacity: 0.25;
 }
+
+/* The left bar always shows the status, even when the card is open, selected or matched. */
+.step.status-success { border-left-color: var(--success); }
+.step.status-failure { border-left-color: var(--failure); }
+.step.status-pending { border-left-color: var(--pending); }
+.step.status-not_reached { border-left-color: var(--not_reached); }
+.step.status-none { border-left-color: var(--border); }
 
 .step-head {
   display: flex;
@@ -692,16 +607,10 @@ select {
   color: var(--muted);
 }
 
-.status-badge,
-.role-badge {
+.status-badge {
   font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
-}
-
-.role-badge {
-  color: var(--accent);
-  font-weight: 600;
 }
 
 .step.status-success .status-badge { color: var(--success); }
@@ -798,12 +707,6 @@ select {
   stroke-dasharray: 7 5;
 }
 
-.edge.highlighted .edge-path {
-  stroke: var(--accent);
-  stroke-width: 3;
-  stroke-dasharray: none;
-}
-
 .edge.dimmed {
   opacity: 0.35;
 }
@@ -828,11 +731,6 @@ select {
 .edge-label.unexpected {
   color: var(--unexpected);
   border-color: var(--unexpected);
-}
-
-.edge-label.highlighted {
-  color: var(--accent);
-  border-color: var(--accent);
 }
 
 .edge-label.dimmed {

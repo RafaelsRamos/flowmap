@@ -6,8 +6,6 @@ export type StepNodeData = StepData & {
   dimmed: boolean;
   matched: boolean;
   selected: boolean;
-  /** Set while picking a path: the ends are marked, the nodes between are tinted. */
-  pathRole?: "from" | "to" | "on";
 };
 
 export type StepFlowNode = Node<StepNodeData, "step">;
@@ -32,7 +30,6 @@ export function StepNode({ data }: NodeProps<StepFlowNode>) {
     data.dimmed ? "dimmed" : "",
     data.matched ? "matched" : "",
     data.selected ? "selected" : "",
-    data.pathRole ? `path-${data.pathRole}` : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -56,8 +53,6 @@ export function StepNode({ data }: NodeProps<StepFlowNode>) {
           {node.service && <span className="step-service">{node.service}</span>}
         </div>
         {status !== "none" && <span className="status-badge">{STATUS_LABEL[status]}</span>}
-        {data.pathRole === "from" && <span className="role-badge">from</span>}
-        {data.pathRole === "to" && <span className="role-badge">to</span>}
       </div>
 
       {expanded && (

@@ -81,12 +81,13 @@ describe("buildGraph", () => {
     expect(edges.find((edge) => edge.data.label === "not home")?.data.observed).toBe(0);
   });
 
-  it("makes expanded nodes taller, by their fields and timeline", () => {
-    const payment = run("order-4821")?.nodes.payment;
+  it("sizes an expanded card to its content: header + body, with no slack", () => {
+    const payment = run("order-4821")?.nodes.payment; // 3 fields, 4 evidence entries
     const compact = nodeSize(payment, false);
     const open = nodeSize(payment, true);
-    expect(compact.width).toBe(NODE_WIDTH);
-    expect(open.height).toBeGreaterThan(compact.height + 3 * 22 + 2 * 22);
+    expect(compact).toEqual({ width: NODE_WIDTH, height: 59 });
+    expect(open.height).toBe(59 + 19 + (3 * 20 + 2 * 2) + 8 + (4 * 20 + 3 * 2));
+    expect(nodeSize({ status: "success" }, true).height).toBe(59 + 19 + 20);
     expect(nodeSize(undefined, true).height).toBeGreaterThan(compact.height);
   });
 });

@@ -42,8 +42,9 @@ text it cannot read on its own needs a custom format; see [adapters.md](adapters
    `ref` stays underneath), and a step reached by an unexpected transition shows the line that revealed it.
 3. **Search**: label, id, service, description, code anchor and log event names. Matches stay lit,
    the rest fades; click a result to centre it.
-4. **Paths** tab: pick two steps (dropdowns or click them on the graph) to see every simple path
-   between them. With a run loaded, each path says whether the run took it. Click a path to isolate it.
-5. **Subflows**: not implemented. The flow schema still reserves `subflows`, `subflow`, `fork` and
+4. **Subflows**: not implemented. The flow schema still reserves `subflows`, `subflow`, `fork` and
    `join`. The top bar has a breadcrumb where drill-down will go; the format is to be designed with
    step 3, once the matcher's semantics are known.
+
+Opening another run closes every card and clears the selected step. An open card is as tall as its
+content, and its left bar keeps the status colour (green success, red failed, yellow pending).

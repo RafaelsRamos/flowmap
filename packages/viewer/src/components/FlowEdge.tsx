@@ -1,7 +1,7 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type Edge, type EdgeProps } from "@xyflow/react";
 import type { EdgeData } from "../lib/graph.js";
 
-export type FlowEdgeData = EdgeData & { dimmed: boolean; highlighted: boolean };
+export type FlowEdgeData = EdgeData & { dimmed: boolean };
 export type FlowFlowEdge = Edge<FlowEdgeData, "flow">;
 
 const LOOP_BULGE = 64;
@@ -28,7 +28,6 @@ export function FlowEdge({ id, sourceX, sourceY, targetX, targetY, sourcePositio
     "edge",
     data.kind,
     data.observed === undefined ? "" : data.observed > 0 ? "taken" : "untaken",
-    data.highlighted ? "highlighted" : "",
     data.dimmed ? "dimmed" : "",
   ]
     .filter(Boolean)

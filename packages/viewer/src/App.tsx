@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DetailPanel } from "./components/DetailPanel.js";
 import { FlowCanvas } from "./components/FlowCanvas.js";
 import type { FlowFlowEdge } from "./components/FlowEdge.js";
-import { PathsPanel } from "./components/PathsPanel.js";
 import { Sidebar } from "./components/Sidebar.js";
 import type { StepFlowNode } from "./components/StepNode.js";
 import { exampleFiles } from "./lib/example.js";
@@ -12,8 +11,6 @@ import { readDropped, readFileList } from "./lib/files.js";
 import { fetchRepoFiles, parseRepoSpec, repoWebUrl } from "./lib/github.js";
 import { buildGraph } from "./lib/graph.js";
 import { layoutGraph, type Position } from "./lib/layout.js";
-import { observedCounts } from "./lib/overlay.js";
-import { findPaths } from "./lib/paths.js";
 import { searchNodes } from "./lib/search.js";
 import { EMPTY_WORKSPACE, buildWorkspace, runTitle, runsForFlow, type SourceFile, type Workspace } from "./lib/workspace.js";
 
@@ -27,8 +24,6 @@ function storedRepoUrl(): string {
   }
 }
 
-type Tab = "details" | "paths";
-
 export function App() {
   const [workspace, setWorkspace] = useState<Workspace>(EMPTY_WORKSPACE);
   const [flowPath, setFlowPath] = useState<string>();
@@ -40,12 +35,8 @@ export function App() {
 
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
   const [selectedId, setSelectedId] = useState<string>();
-  const [tab, setTab] = useState<Tab>("details");
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState<{ id: string; token: number }>();
-  const [pathFrom, setPathFrom] = useState<string>();
-  const [pathTo, setPathTo] = useState<string>();
-  const [chosenPath, setChosenPath] = useState<number>();
 
   const loaded = workspace.flows.find((candidate) => candidate.path === flowPath);
   const flow = loaded?.flow;
@@ -61,10 +52,6 @@ export function App() {
     setExpanded(new Set());
     setSelectedId(undefined);
     setQuery("");
-    setPathFrom(undefined);
-    setPathTo(undefined);
-    setChosenPath(undefined);
-    setTab("details");
     setError(next.flows.length === 0 && next.problems.length === 0 ? "No flow files found. Flow files have a schemaVersion." : undefined);
   }, []);
 
@@ -137,7 +124,14 @@ export function App() {
   const addTracedRun = (traced: Run): void => {
     const path = `traced/${traced.flow}-${Object.values(traced.correlation).join("-")}.run.json`;
     setWorkspace((current) => ({ ...current, runs: [...current.runs.filter((existing) => existing.path !== path), { path, run: traced, issues: [] }] }));
+    selectRun(path);
+  };
+
+  // Opening another run starts from a clean canvas: every card closed, no step selected.
+  const selectRun = (path: string | undefined): void => {
     setRunPath(path);
+    setExpanded(new Set());
+    setSelectedId(undefined);
   };
 
   const selectFlow = (path: string): void => {
@@ -147,9 +141,6 @@ export function App() {
     setExpanded(new Set());
     setSelectedId(undefined);
     setQuery("");
-    setPathFrom(undefined);
-    setPathTo(undefined);
-    setChosenPath(undefined);
   };
 
   const graph = useMemo(() => (flow ? buildGraph(flow, run, expanded) : undefined), [flow, run, expanded]);
@@ -177,62 +168,30 @@ export function App() {
   const hits = useMemo(() => (flow ? new Set(searchNodes(flow, query).map((hit) => hit.id)) : new Set<string>()), [flow, query]);
   const searching = query.trim() !== "";
 
-  const pathResult = useMemo(
-    () => (flow && pathFrom && pathTo ? findPaths(flow.edges, pathFrom, pathTo) : { paths: [], truncated: false }),
-    [flow, pathFrom, pathTo],
-  );
-  const counts = useMemo(() => (flow ? observedCounts(flow, run) : []), [flow, run]);
-  const walked = useMemo(
-    () => (run ? pathResult.paths.map((path) => path.every((index) => (counts[index] ?? 0) > 0)) : undefined),
-    [run, pathResult, counts],
-  );
-  const shownPaths = useMemo(
-    () => (chosenPath === undefined ? pathResult.paths : [pathResult.paths[chosenPath] ?? []]),
-    [pathResult, chosenPath],
-  );
-  const pathMode = tab === "paths" && pathResult.paths.length > 0;
-  const onPathEdges = useMemo(() => new Set(shownPaths.flat()), [shownPaths]);
-  const onPathNodes = useMemo(() => {
-    const ids = new Set<string>();
-    for (const path of shownPaths) {
-      for (const index of path) {
-        const edge = flow?.edges[index];
-        if (edge) {
-          ids.add(edge.from);
-          ids.add(edge.to);
-        }
-      }
-    }
-    return ids;
-  }, [flow, shownPaths]);
-
   const nodes = useMemo<StepFlowNode[]>(() => {
     if (!graph) return [];
     return graph.nodes.map((node) => {
       const id = node.id;
-      const dimmed = (searching && !hits.has(id)) || (pathMode && !onPathNodes.has(id));
-      const pathRole = tab === "paths" ? (id === pathFrom ? "from" : id === pathTo ? "to" : pathMode && onPathNodes.has(id) ? "on" : undefined) : undefined;
+      const dimmed = searching && !hits.has(id);
       return {
         id,
         type: "step",
         position: layout?.positions.get(id) ?? { x: 0, y: 0 },
-        data: { ...node.data, dimmed, matched: searching && hits.has(id), selected: id === selectedId && tab === "details", pathRole },
+        data: { ...node.data, dimmed, matched: searching && hits.has(id), selected: id === selectedId },
         draggable: false,
       };
     });
-  }, [graph, layout, searching, hits, pathMode, onPathNodes, tab, pathFrom, pathTo, selectedId]);
+  }, [graph, layout, searching, hits, selectedId]);
 
   const edges = useMemo<FlowFlowEdge[]>(() => {
     if (!graph) return [];
     const heights = new Map(graph.nodes.map((node) => [node.id, node.data.height]));
     return graph.edges.map((edge) => {
       const [sourceHandle, targetHandle] = handlesFor(edge.source, edge.target, edge.data.selfLoop, layout?.positions, heights);
-      const onPath = edge.data.flowIndex !== undefined && onPathEdges.has(edge.data.flowIndex);
       const dimmed =
-        (pathMode && !onPath) ||
         (searching && !(hits.has(edge.source) && hits.has(edge.target))) ||
-        (run !== undefined && !pathMode && !searching && edge.data.kind === "declared" && edge.data.observed === 0);
-      const color = onPath ? "var(--accent)" : edge.data.kind === "unexpected" ? "var(--unexpected)" : edge.data.observed ? "var(--taken)" : "var(--edge)";
+        (run !== undefined && !searching && edge.data.kind === "declared" && edge.data.observed === 0);
+      const color = edge.data.kind === "unexpected" ? "var(--unexpected)" : edge.data.observed ? "var(--taken)" : "var(--edge)";
       return {
         id: edge.id,
         source: edge.source,
@@ -241,22 +200,12 @@ export function App() {
         targetHandle,
         type: "flow",
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16, color },
-        data: { ...edge.data, dimmed, highlighted: onPath },
+        data: { ...edge.data, dimmed },
       };
     });
-  }, [graph, layout, pathMode, onPathEdges, searching, hits, run]);
+  }, [graph, layout, searching, hits, run]);
 
   const onNodeClick = (id: string): void => {
-    if (tab === "paths") {
-      if (pathFrom === undefined || (pathFrom !== undefined && pathTo !== undefined)) {
-        setPathFrom(id);
-        setPathTo(undefined);
-      } else {
-        setPathTo(id);
-      }
-      setChosenPath(undefined);
-      return;
-    }
     setSelectedId(id);
     setExpanded((current) => {
       const next = new Set(current);
@@ -282,7 +231,7 @@ export function App() {
         onExample={() => open(exampleFiles())}
         onRepo={(url) => void openRepo(url)}
         onFlow={selectFlow}
-        onRun={(path) => setRunPath(path)}
+        onRun={selectRun}
         onTraced={addTracedRun}
         onRepoUrl={setRepoUrl}
       />
@@ -316,7 +265,6 @@ export function App() {
                           onClick={() => {
                             setFocus({ id: hit.id, token: Date.now() });
                             setSelectedId(hit.id);
-                            setTab("details");
                           }}
                         >
                           {flow.nodes.find((node) => node.id === hit.id)?.label}
@@ -348,7 +296,7 @@ export function App() {
                   edges={edges}
                   focus={focus}
                   onNodeClick={onNodeClick}
-                  onBackgroundClick={() => tab === "details" && setSelectedId(undefined)}
+                  onBackgroundClick={() => setSelectedId(undefined)}
                 />
               ) : (
                 <p className="muted center">Laying out…</p>
@@ -364,51 +312,17 @@ export function App() {
 
       {flow && (
         <aside className="panel">
-          <div className="tabs" role="tablist">
-            <button type="button" role="tab" aria-selected={tab === "details"} onClick={() => setTab("details")}>
-              Details
-            </button>
-            <button type="button" role="tab" aria-selected={tab === "paths"} onClick={() => setTab("paths")}>
-              Paths
-            </button>
-          </div>
-          {tab === "details" ? (
-            selectedNode ? (
-              <DetailPanel flow={flow} node={selectedNode} run={run} repoUrl={repoUrl || undefined} onClose={() => setSelectedId(undefined)} />
-            ) : (
-              <div className="panel-content">
-                <h2>{flow.flow}</h2>
-                {flow.description && <p>{flow.description}</p>}
-                <p className="muted">
-                  Click a step to expand it and see its details. {flow.nodes.length} steps, {flow.edges.length} transitions. Correlated by{" "}
-                  <code>{flow.correlationKey}</code>.
-                </p>
-              </div>
-            )
+          {selectedNode ? (
+            <DetailPanel flow={flow} node={selectedNode} run={run} repoUrl={repoUrl || undefined} onClose={() => setSelectedId(undefined)} />
           ) : (
-            <PathsPanel
-              flow={flow}
-              from={pathFrom}
-              to={pathTo}
-              paths={pathResult.paths}
-              truncated={pathResult.truncated}
-              walked={walked}
-              selected={chosenPath}
-              onFrom={(id) => {
-                setPathFrom(id);
-                setChosenPath(undefined);
-              }}
-              onTo={(id) => {
-                setPathTo(id);
-                setChosenPath(undefined);
-              }}
-              onSelect={setChosenPath}
-              onSwap={() => {
-                setPathFrom(pathTo);
-                setPathTo(pathFrom);
-                setChosenPath(undefined);
-              }}
-            />
+            <div className="panel-content">
+              <h2>{flow.flow}</h2>
+              {flow.description && <p>{flow.description}</p>}
+              <p className="muted">
+                Click a step to expand it and see its details. {flow.nodes.length} steps, {flow.edges.length} transitions. Correlated by{" "}
+                <code>{flow.correlationKey}</code>.
+              </p>
+            </div>
           )}
         </aside>
       )}
