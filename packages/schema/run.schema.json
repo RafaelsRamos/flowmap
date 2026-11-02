@@ -112,6 +112,10 @@
           "pattern": "^[a-z][a-z0-9+.-]*://\\S+$",
           "x-message": "must be a reference URI to the raw log line, for example loki://payments-api?id=abc123",
           "description": "Points back to the raw log line; the scheme depends on the adapter (file://, loki://, otel://)."
+        },
+        "raw": {
+          "type": "string",
+          "description": "The log line itself, as the backend or file held it, so the evidence can be read without opening the source. May contain personal data: runs with raw lines are never committed except as scrubbed fixtures."
         }
       }
     },
@@ -146,6 +150,10 @@
           "pattern": "^[a-z][a-z0-9+.-]*://\\S+$",
           "x-message": "must be a reference URI to the raw log line, for example loki://inventory?id=ghi789",
           "description": "Points back to the log line that revealed the transition."
+        },
+        "raw": {
+          "type": "string",
+          "description": "The log line that revealed the transition, as the backend or file held it."
         }
       }
     }

@@ -31,6 +31,33 @@ describe("flowmap trace", () => {
     }
   });
 
+  it("reads a plain-text .log with a --log-format file, and keeps the raw lines", async () => {
+    const text = `${logs}/text`;
+    const { code, stdout, stderr } = await cli(trace(["--orderId", "4840", "--logs", `${text}/order-4840.log`, "--log-format", `${text}/order-4840.format.yml`]));
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toEqual(withNow(golden("4840")));
+    expect(stderr).toContain("3 lines carried no usable event");
+  });
+
+  it("reads key=value and JSON-prefixed .log lines with no format file, naming the source from --source or the file", async () => {
+    const { code, stdout } = await cli(trace(["--orderId", "4841", "--logs", `${logs}/text/order-4841.log`]));
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toEqual(withNow(golden("4841")));
+  });
+
+  it("--no-raw leaves the raw lines out", async () => {
+    const { stdout } = await cli(trace(["--orderId", "4821", "--logs", `${logs}/order-4821.ndjson`, "--no-raw"]));
+    expect(stdout).not.toContain('"raw"');
+    expect(JSON.parse(stdout).nodes.payment.evidence).toHaveLength(4);
+  });
+
+  it("reports a broken --log-format file as a usage error", async () => {
+    const bad = await cli(trace(["--orderId", "1", "--logs", `${logs}/text/order-4840.log`, "--log-format", `${logs}/text/order-4840.log`]));
+    expect(bad.code).toBe(2);
+    expect(bad.stderr).toContain("order-4840.log:");
+    expect((await cli(trace(["--orderId", "1", "--logs", "x", "--log-format", "nope.yml"]))).stderr).toContain("cannot read the log format");
+  });
+
   it("keeps stdout clean for redirection: the summary goes to stderr", async () => {
     const { stdout, stderr } = await cli(trace(["--orderId", "4831", "--logs", `${logs}/order-4831.ndjson`]));
     expect(() => JSON.parse(stdout)).not.toThrow();

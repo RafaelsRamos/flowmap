@@ -1,0 +1,13 @@
+2026-10-31 10:00:01,120 INFO  [orders-api] Order 4840 placed by customer c-77
+2026-10-31 10:00:01,480 DEBUG [orders-api] cache warmed (3 entries)
+2026-10-31 10:00:03,900 INFO  [inventory] Stock reserved for order 4840
+2026-10-31 10:00:05,010 INFO  [payments-api] Charging €63.20 for order 4840
+2026-10-31 10:00:06,330 WARN  [payments-api] Card declined for order 4840: insufficient funds
+java.lang.IllegalStateException: gateway returned 51
+    at com.shop.payments.Gateway.charge(Gateway.java:88)
+2026-10-31 10:00:07,000 INFO  [orders-api] Order 4999 placed by customer c-12
+2026-10-31 10:02:11,040 INFO  [payments-api] Charging €63.20 for order 4840
+2026-10-31 10:02:12,250 INFO  [payments-api] Payment approved for order 4840
+2026-10-31 12:15:40,000 INFO  [warehouse] Parcel packed for order 4840
+2026-10-31 14:05:00,000 INFO  [delivery] Courier left the depot with order 4840
+2026-10-31 15:30:09,500 INFO  [delivery] Parcel for order 4840 signed for by M. Silva

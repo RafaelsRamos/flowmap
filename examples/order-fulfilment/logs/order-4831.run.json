@@ -14,7 +14,8 @@
           "ts": "2026-10-31T08:00:00Z",
           "event": "order.placed",
           "msg": "Order placed",
-          "ref": "file://order-4831.ndjson#L1"
+          "ref": "file://order-4831.ndjson#L1",
+          "raw": "{\"ts\":\"2026-10-31T08:00:00Z\",\"source\":\"orders-api\",\"event\":\"order.placed\",\"msg\":\"Order placed\",\"attributes\":{\"order_id\":\"4831\"}}"
         }
       ]
     },
@@ -25,7 +26,8 @@
           "ts": "2026-10-31T08:00:04Z",
           "event": "stock.reserved",
           "msg": "Stock reserved",
-          "ref": "file://order-4831.ndjson#L2"
+          "ref": "file://order-4831.ndjson#L2",
+          "raw": "{\"ts\":\"2026-10-31T08:00:04Z\",\"source\":\"inventory\",\"event\":\"stock.reserved\",\"msg\":\"Stock reserved\",\"attributes\":{\"order_id\":\"4831\"}}"
         }
       ]
     },
@@ -41,13 +43,15 @@
           "ts": "2026-10-31T08:00:20Z",
           "event": "payment.attempted",
           "msg": "Charging card",
-          "ref": "file://order-4831.ndjson#L3"
+          "ref": "file://order-4831.ndjson#L3",
+          "raw": "{\"ts\":\"2026-10-31T08:00:20Z\",\"source\":\"payments-api\",\"event\":\"payment.attempted\",\"msg\":\"Charging card\",\"attributes\":{\"order_id\":\"4831\",\"amount\":\"€42.50\"}}"
         },
         {
           "ts": "2026-10-31T08:00:30Z",
           "event": "payment.approved",
           "msg": "Payment approved",
-          "ref": "file://order-4831.ndjson#L4"
+          "ref": "file://order-4831.ndjson#L4",
+          "raw": "{\"ts\":\"2026-10-31T08:00:30Z\",\"source\":\"payments-api\",\"event\":\"payment.approved\",\"msg\":\"Payment approved\",\"attributes\":{\"order_id\":\"4831\",\"amount\":\"€42.50\"}}"
         }
       ]
     },
@@ -64,7 +68,8 @@
           "ts": "2026-10-31T08:05:00Z",
           "event": "delivery.dispatched",
           "msg": "Out for delivery",
-          "ref": "file://order-4831.ndjson#L5"
+          "ref": "file://order-4831.ndjson#L5",
+          "raw": "{\"ts\":\"2026-10-31T08:05:00Z\",\"source\":\"delivery\",\"event\":\"delivery.dispatched\",\"msg\":\"Out for delivery\",\"attributes\":{\"order_id\":\"4831\"}}"
         }
       ]
     },
@@ -89,7 +94,8 @@
       "from": "payment",
       "to": "out-for-delivery",
       "ts": "2026-10-31T08:05:00Z",
-      "ref": "file://order-4831.ndjson#L5"
+      "ref": "file://order-4831.ndjson#L5",
+      "raw": "{\"ts\":\"2026-10-31T08:05:00Z\",\"source\":\"delivery\",\"event\":\"delivery.dispatched\",\"msg\":\"Out for delivery\",\"attributes\":{\"order_id\":\"4831\"}}"
     }
   ]
 }

@@ -1,0 +1,8 @@
+2026-10-31T11:00:00Z service=orders-api event=order.placed order_id=4841 msg="Order placed"
+2026-10-31T11:00:02Z service=inventory event=stock.reserved order_id=4841 msg="Stock reserved"
+2026-10-31T11:00:20Z INFO service=payments-api event=payment.attempted order_id=4841 amount="€129.00"
+2026-10-31T11:00:30Z WARN service=payments-api event=payment.declined order_id=4841 amount="€129.00" msg="Card declined"
+2026-10-31T11:05:20Z INFO service=payments-api event=payment.attempted order_id=4841 amount="€129.00"
+2026-10-31T11:05:30Z WARN service=payments-api event=payment.declined order_id=4841 amount="€129.00" msg="Card declined"
+2026-10-31T11:15:20Z INFO {"source":"payments-api","event":"payment.attempted","attributes":{"order_id":"4841","amount":"€129.00"}}
+2026-10-31T11:15:30Z WARN {"source":"payments-api","event":"payment.declined","msg":"Card declined, giving up","attributes":{"order_id":"4841","amount":"€129.00"}}

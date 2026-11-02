@@ -2,7 +2,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildLogql, buildQuery, lokiAdapter, ndjsonAdapter, normaliseRecord, parseNdjson } from "../src/index.js";
+import { buildLogql, buildQuery, lokiAdapter, normaliseRecord, parseNdjson } from "../src/index.js";
+import { fileAdapter } from "../src/node.js";
 import type { Flow } from "@flowmap/core";
 
 const query = {
@@ -61,7 +62,7 @@ describe("parseNdjson", () => {
   });
 });
 
-describe("ndjsonAdapter", () => {
+describe("fileAdapter on NDJSON", () => {
   const dir = mkdtempSync(join(tmpdir(), "flowmap-ndjson-"));
   const a = join(dir, "a.ndjson");
   const b = join(dir, "b.ndjson");
@@ -69,14 +70,14 @@ describe("ndjsonAdapter", () => {
   writeFileSync(b, '{"ts":"2026-10-31T10:00:00Z","source":"orders-api","event":"y"}\n');
 
   it("reads several files, keeps only the query's sources and honours the window", async () => {
-    const adapter = ndjsonAdapter([a, b]);
+    const adapter = fileAdapter([a, b]);
     expect((await adapter.fetch(query)).events.map((e) => e.event)).toEqual(["x", "y"]);
     const windowed = await adapter.fetch({ ...query, from: new Date("2026-10-31T09:30:00Z") });
     expect(windowed.events.map((e) => e.event)).toEqual(["y"]);
   });
 
   it("names a missing file", async () => {
-    await expect(ndjsonAdapter([join(dir, "missing.ndjson")]).fetch(query)).rejects.toThrow(/cannot read ".*missing\.ndjson"/);
+    await expect(fileAdapter([join(dir, "missing.ndjson")]).fetch(query)).rejects.toThrow(/cannot read ".*missing\.ndjson"/);
   });
 });
 
@@ -144,6 +145,7 @@ describe("lokiAdapter", () => {
         msg: "Card declined",
         attributes: { order_id: "4821" },
         ref: `loki://payments-api?ts=${ns("2026-10-31T09:03:00Z", 123456)}`,
+        raw: JSON.stringify({ event: "payment.declined", msg: "Card declined", order_id: "4821" }),
       },
     ]);
     expect(Date.parse(events[0]!.ts)).toBe(Date.parse("2026-10-31T09:03:00Z"));

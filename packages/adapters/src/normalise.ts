@@ -5,6 +5,8 @@ export interface Defaults {
   source?: string;
   /** Used when the record carries no timestamp of its own. */
   ts?: string;
+  /** The raw line, kept on the event so the evidence can show it. */
+  raw?: string;
 }
 
 export type Normalised = { event: LogEvent } | { reason: string };
@@ -66,8 +68,17 @@ export function normaliseRecord(record: unknown, ref: string, defaults: Defaults
       attributes,
       ...(typeof rawMsg === "string" && rawMsg !== "" ? { msg: rawMsg } : {}),
       ref,
+      ...(defaults.raw === undefined ? {} : { raw: capRaw(defaults.raw) }),
     },
   };
+}
+
+const MAX_RAW = 4000;
+
+/** Evidence carries the raw line; an absurdly long one (a stack trace on one line) is cut. */
+export function capRaw(line: string): string {
+  const trimmed = line.replace(/\r$/, "");
+  return trimmed.length > MAX_RAW ? `${trimmed.slice(0, MAX_RAW)}…` : trimmed;
 }
 
 /** ISO 8601 with a zone is kept as written; epoch numbers (seconds or milliseconds) are converted. */

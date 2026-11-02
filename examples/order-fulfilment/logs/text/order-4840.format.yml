@@ -1,0 +1,14 @@
+# How to read order-4840.log (a plain-text log with no structured fields)
+pattern: '^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) +(?<level>\w+) +\[(?<source>[\w-]+)\] (?<msg>.*)$'
+timezone: "+01:00"
+events:
+  - { match: 'Order (?<order_id>\d+) placed', event: order.placed }
+  - { match: 'Stock reserved for order (?<order_id>\d+)', event: stock.reserved }
+  - { match: 'Stock unavailable for order (?<order_id>\d+)', event: stock.unavailable }
+  - { match: 'Charging (?<amount>\S+) for order (?<order_id>\d+)', event: payment.attempted }
+  - { match: 'Card declined for order (?<order_id>\d+)', event: payment.declined }
+  - { match: 'Payment approved for order (?<order_id>\d+)', event: payment.approved }
+  - { match: 'Parcel packed for order (?<order_id>\d+)', event: pack.completed }
+  - { match: 'Courier left the depot with order (?<order_id>\d+)', event: delivery.dispatched }
+  - { match: 'nobody home for order (?<order_id>\d+)', event: delivery.not_home }
+  - { match: 'Parcel for order (?<order_id>\d+) signed for', event: delivery.signed }

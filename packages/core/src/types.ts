@@ -90,6 +90,8 @@ export interface EvidenceEntry {
   event: string;
   msg?: string;
   ref?: string;
+  /** The log line itself. */
+  raw?: string;
 }
 
 export interface ObservedEdge {
@@ -104,6 +106,7 @@ export interface UnexpectedEdge {
   to: string;
   ts?: string;
   ref?: string;
+  raw?: string;
 }
 
 export interface RunValidationResult {

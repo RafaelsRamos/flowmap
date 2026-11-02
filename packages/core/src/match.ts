@@ -62,7 +62,13 @@ export function matchRun(input: MatchInput): Run {
     if (explained) continue;
     const from = nodeBefore(first.position, node.id, nodesAt);
     if (from === undefined || declaredPair(from, node.id)) continue;
-    unexpected.push({ from, to: node.id, ts: first.event.ts, ref: first.event.ref });
+    unexpected.push({
+      from,
+      to: node.id,
+      ts: first.event.ts,
+      ref: first.event.ref,
+      ...(first.event.raw === undefined ? {} : { raw: first.event.raw }),
+    });
   }
   unexpected.sort((a, b) => Date.parse(a.ts ?? "") - Date.parse(b.ts ?? ""));
 
@@ -80,6 +86,7 @@ export function matchRun(input: MatchInput): Run {
         event: event.event,
         ...(event.msg === undefined ? {} : { msg: event.msg }),
         ref: event.ref,
+        ...(event.raw === undefined ? {} : { raw: event.raw }),
       }));
     }
     nodes[node.id] = entry;

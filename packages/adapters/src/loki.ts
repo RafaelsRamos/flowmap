@@ -79,7 +79,7 @@ export function lokiAdapter(options: LokiOptions): LogAdapter {
               continue;
             }
             const ref = `loki://${encodeURIComponent(source ?? "unknown")}?ts=${nanos}`;
-            const result = normaliseRecord(record, ref, { ...(source === undefined ? {} : { source }), ts: nanosToIso(at) });
+            const result = normaliseRecord(record, ref, { ...(source === undefined ? {} : { source }), ts: nanosToIso(at), raw: line });
             if ("event" in result) events.push(result.event);
             else warnings.push(`loki ${ref}: skipped, ${result.reason}`);
           }
@@ -109,7 +109,8 @@ function headers(options: LokiOptions): Record<string, string> {
   if (options.tenant !== undefined) result["X-Scope-OrgID"] = options.tenant;
   if (options.bearerToken !== undefined) result.Authorization = `Bearer ${options.bearerToken}`;
   else if (options.basicAuth !== undefined) {
-    result.Authorization = `Basic ${Buffer.from(`${options.basicAuth.user}:${options.basicAuth.password}`).toString("base64")}`;
+    const bytes = new TextEncoder().encode(`${options.basicAuth.user}:${options.basicAuth.password}`);
+    result.Authorization = `Basic ${btoa(String.fromCharCode(...bytes))}`;
   }
   return result;
 }

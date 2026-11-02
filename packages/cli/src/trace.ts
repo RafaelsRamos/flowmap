@@ -1,14 +1,18 @@
 import { readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { parseArgs } from "node:util";
-import { lokiAdapter, buildQuery, ndjsonAdapter, type LogAdapter } from "@flowmap/adapters";
-import { matchRun, validateFlowSource, validateRunSource, type Flow, type Issue } from "@flowmap/core";
+import { buildQuery, lokiAdapter, readLogFormat, type LogAdapter, type TextFormat } from "@flowmap/adapters";
+import { fileAdapter } from "@flowmap/adapters/node";
+import { matchRun, parseSource, validateFlowSource, validateRunSource, type Flow, type Issue } from "@flowmap/core";
 import { collectFiles } from "./files.js";
 import type { Io } from "./run.js";
 
 const OPTIONS = {
   flows: { type: "string" },
   logs: { type: "string", multiple: true },
+  "log-format": { type: "string" },
+  source: { type: "string" },
+  "no-raw": { type: "boolean" },
   "loki-url": { type: "string" },
   "loki-label": { type: "string" },
   "loki-tenant": { type: "string" },
@@ -99,7 +103,7 @@ async function traceOrThrow(argv: string[], io: Io, warnings: string[]) {
   const logs = values.logs ?? [];
   if (logs.length > 0 && lokiUrl !== undefined) throw new TraceError("usage", "pass either --logs or --loki-url, not both", 2);
   if (logs.length === 0 && lokiUrl === undefined) {
-    throw new TraceError("usage", "no log source: pass --logs <file.ndjson> or --loki-url <url>", 2);
+    throw new TraceError("usage", "no log source: pass --logs <file> (.ndjson, .log, .txt) or --loki-url <url>", 2);
   }
 
   const now = io.now?.() ?? new Date();
@@ -108,7 +112,11 @@ async function traceOrThrow(argv: string[], io: Io, warnings: string[]) {
 
   let adapter: LogAdapter;
   if (logs.length > 0) {
-    adapter = ndjsonAdapter(logs.map((path) => join(io.cwd, path)));
+    const format = values["log-format"] === undefined ? undefined : loadLogFormat(values["log-format"], io);
+    adapter = fileAdapter(logs.map((path) => join(io.cwd, path)), {
+      ...(format === undefined ? {} : { format }),
+      ...(values.source === undefined ? {} : { source: values.source }),
+    });
   } else {
     const token = env.FLOWMAP_LOKI_TOKEN;
     const user = env.FLOWMAP_LOKI_USER;
@@ -130,10 +138,11 @@ async function traceOrThrow(argv: string[], io: Io, warnings: string[]) {
     throw new TraceError("backend", (error as Error).message, 2);
   }
   warnings.push(...fetched.warnings);
+  const events = values["no-raw"] === true ? fetched.events.map(({ raw: _raw, ...rest }) => rest) : fetched.events;
 
   const run = matchRun({
     flow,
-    events: fetched.events,
+    events,
     correlationValue,
     generatedAt: now.toISOString(),
     ...(values["flow-revision"] === undefined ? {} : { flowRevision: values["flow-revision"] }),
@@ -163,6 +172,9 @@ function parse(args: string[], extra: Record<string, { type: "string" }>) {
     return values as Record<string, string | string[] | boolean | undefined> & {
       flows?: string;
       logs?: string[];
+      "log-format"?: string;
+      source?: string;
+      "no-raw"?: boolean;
       "loki-url"?: string;
       "loki-label"?: string;
       "loki-tenant"?: string;
@@ -173,6 +185,22 @@ function parse(args: string[], extra: Record<string, { type: "string" }>) {
     };
   } catch (error) {
     throw new TraceError("usage", (error as Error).message, 2);
+  }
+}
+
+function loadLogFormat(path: string, io: Io): TextFormat {
+  let text: string;
+  try {
+    text = readFileSync(join(io.cwd, path), "utf8");
+  } catch {
+    throw new TraceError("usage", `cannot read the log format "${path}": no such file or directory`, 2);
+  }
+  const parsed = parseSource(text, "a log format");
+  if (parsed.issues.length > 0) throw new TraceError("usage", `${path}: ${parsed.issues[0]?.message ?? "cannot be parsed"}`, 2);
+  try {
+    return readLogFormat(parsed.data);
+  } catch (error) {
+    throw new TraceError("usage", `${path}: ${(error as Error).message}`, 2);
   }
 }
 

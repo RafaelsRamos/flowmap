@@ -29,7 +29,7 @@ describe("buildWorkspace", () => {
     const tree = readTree(fixture).filter((file) => file.path.startsWith("flows/order-fulfilment") || file.path.endsWith(".run.json") && file.path.startsWith("logs/"));
     const workspace = buildWorkspace(tree);
     expect(workspace.problems).toEqual([]);
-    expect(workspace.runs.map((r) => runTitle(r.run)).sort()).toEqual(["orderId 4821", "orderId 4830", "orderId 4831"]);
+    expect(workspace.runs.map((r) => runTitle(r.run)).sort()).toEqual(["orderId 4821", "orderId 4830", "orderId 4831", "orderId 4840", "orderId 4841"]);
     const flow = workspace.flows[0]?.flow;
     const retry = workspace.runs.find((r) => r.run.correlation.orderId === "4821");
     if (!flow || !retry) throw new Error("fixture missing");

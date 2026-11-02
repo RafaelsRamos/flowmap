@@ -15,4 +15,6 @@ export interface LogEvent {
   msg?: string;
   /** URI back to the raw log line, e.g. `file://orders.ndjson#L12` or `loki://payments-api?ts=...`. */
   ref: string;
+  /** The log line as the backend or file held it; copied into the run's evidence so it can be read in place. */
+  raw?: string;
 }

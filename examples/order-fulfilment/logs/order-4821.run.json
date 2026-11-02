@@ -14,7 +14,8 @@
           "ts": "2026-10-31T09:00:02Z",
           "event": "order.placed",
           "msg": "Order placed",
-          "ref": "file://order-4821.ndjson#L1"
+          "ref": "file://order-4821.ndjson#L1",
+          "raw": "{\"ts\":\"2026-10-31T09:00:02Z\",\"source\":\"orders-api\",\"event\":\"order.placed\",\"msg\":\"Order placed\",\"attributes\":{\"order_id\":\"4821\"}}"
         }
       ]
     },
@@ -25,7 +26,8 @@
           "ts": "2026-10-31T09:00:05Z",
           "event": "stock.reserved",
           "msg": "Stock reserved",
-          "ref": "file://order-4821.ndjson#L2"
+          "ref": "file://order-4821.ndjson#L2",
+          "raw": "{\"ts\":\"2026-10-31T09:00:05Z\",\"source\":\"inventory\",\"event\":\"stock.reserved\",\"msg\":\"Stock reserved\",\"attributes\":{\"order_id\":\"4821\"}}"
         }
       ]
     },
@@ -41,25 +43,29 @@
           "ts": "2026-10-31T09:02:50Z",
           "event": "payment.attempted",
           "msg": "Charging card",
-          "ref": "file://order-4821.ndjson#L4"
+          "ref": "file://order-4821.ndjson#L4",
+          "raw": "{\"ts\":\"2026-10-31T09:02:50Z\",\"source\":\"payments-api\",\"event\":\"payment.attempted\",\"msg\":\"Charging card\",\"attributes\":{\"order_id\":\"4821\",\"amount\":\"€84.90\"}}"
         },
         {
           "ts": "2026-10-31T09:03:00Z",
           "event": "payment.declined",
           "msg": "Card declined",
-          "ref": "file://order-4821.ndjson#L5"
+          "ref": "file://order-4821.ndjson#L5",
+          "raw": "{\"ts\":\"2026-10-31T09:03:00Z\",\"source\":\"payments-api\",\"event\":\"payment.declined\",\"msg\":\"Card declined\",\"attributes\":{\"order_id\":\"4821\",\"amount\":\"€84.90\",\"reason\":\"insufficient_funds\"}}"
         },
         {
           "ts": "2026-10-31T09:04:50Z",
           "event": "payment.attempted",
           "msg": "Charging card",
-          "ref": "file://order-4821.ndjson#L6"
+          "ref": "file://order-4821.ndjson#L6",
+          "raw": "{\"ts\":\"2026-10-31T09:04:50Z\",\"source\":\"payments-api\",\"event\":\"payment.attempted\",\"msg\":\"Charging card\",\"attributes\":{\"order_id\":\"4821\",\"amount\":\"€84.90\"}}"
         },
         {
           "ts": "2026-10-31T09:05:00Z",
           "event": "payment.approved",
           "msg": "Payment approved",
-          "ref": "file://order-4821.ndjson#L7"
+          "ref": "file://order-4821.ndjson#L7",
+          "raw": "{\"ts\":\"2026-10-31T09:05:00Z\",\"source\":\"payments-api\",\"event\":\"payment.approved\",\"msg\":\"Payment approved\",\"attributes\":{\"order_id\":\"4821\",\"amount\":\"€84.90\"}}"
         }
       ]
     },
@@ -70,7 +76,8 @@
           "ts": "2026-10-31T11:20:00Z",
           "event": "pack.completed",
           "msg": "Parcel packed",
-          "ref": "file://order-4821.ndjson#L9"
+          "ref": "file://order-4821.ndjson#L9",
+          "raw": "{\"ts\":\"2026-10-31T11:20:00Z\",\"source\":\"warehouse\",\"event\":\"pack.completed\",\"msg\":\"Parcel packed\",\"attributes\":{\"order_id\":\"4821\"}}"
         }
       ]
     },
@@ -84,19 +91,22 @@
           "ts": "2026-10-31T13:10:00Z",
           "event": "delivery.dispatched",
           "msg": "Out for delivery",
-          "ref": "file://order-4821.ndjson#L10"
+          "ref": "file://order-4821.ndjson#L10",
+          "raw": "{\"ts\":\"2026-10-31T13:10:00Z\",\"source\":\"delivery\",\"event\":\"delivery.dispatched\",\"msg\":\"Out for delivery\",\"attributes\":{\"order_id\":\"4821\"}}"
         },
         {
           "ts": "2026-10-31T14:45:00Z",
           "event": "delivery.not_home",
           "msg": "Nobody home, will retry",
-          "ref": "file://order-4821.ndjson#L11"
+          "ref": "file://order-4821.ndjson#L11",
+          "raw": "{\"ts\":\"2026-10-31T14:45:00Z\",\"source\":\"delivery\",\"event\":\"delivery.not_home\",\"msg\":\"Nobody home, will retry\",\"attributes\":{\"order_id\":\"4821\"}}"
         },
         {
           "ts": "2026-10-31T15:50:00Z",
           "event": "delivery.signed",
           "msg": "Signed for",
-          "ref": "file://order-4821.ndjson#L12"
+          "ref": "file://order-4821.ndjson#L12",
+          "raw": "{\"ts\":\"2026-10-31T15:50:00Z\",\"source\":\"delivery\",\"event\":\"delivery.signed\",\"msg\":\"Signed for\",\"attributes\":{\"order_id\":\"4821\"}}"
         }
       ]
     },
@@ -107,7 +117,8 @@
           "ts": "2026-10-31T15:50:00Z",
           "event": "delivery.signed",
           "msg": "Signed for",
-          "ref": "file://order-4821.ndjson#L12"
+          "ref": "file://order-4821.ndjson#L12",
+          "raw": "{\"ts\":\"2026-10-31T15:50:00Z\",\"source\":\"delivery\",\"event\":\"delivery.signed\",\"msg\":\"Signed for\",\"attributes\":{\"order_id\":\"4821\"}}"
         }
       ]
     }

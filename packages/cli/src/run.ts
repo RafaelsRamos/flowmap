@@ -35,7 +35,10 @@ Options:
 
 trace options:
   --flows <dir>          where to look for flows by name (default: flows)
-  --logs <file>          NDJSON log export; repeat for several files
+  --logs <file>          log file: .ndjson/.jsonl, or plain text (.log, .txt); repeat for several files
+  --log-format <file>    how to read plain-text lines: a JSON/YAML file with pattern, events, source, timezone
+  --source <name>        source for lines that name none (default: the file name without extension)
+  --no-raw               leave the raw log lines out of the run document
   --loki-url <url>       read from Loki instead (or FLOWMAP_LOKI_URL)
   --loki-label <name>    stream label holding the log source (default: service)
   --loki-tenant <id>     X-Scope-OrgID for multi-tenant Loki
