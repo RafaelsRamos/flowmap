@@ -17,6 +17,7 @@ export function DetailPanel({ flow, node, run, repoUrl, onClose }: Props) {
   const evidence = node.evidence;
   const link = node.code ? codeUrl(repoUrl, node.code, revisionRef(run?.flowRevision)) : undefined;
   const anchor = node.code ? parseCodeAnchor(node.code) : undefined;
+  const unexpectedArrivals = (run?.unexpected ?? []).filter((edge) => edge.to === node.id);
 
   return (
     <div className="panel-content" data-testid="detail-panel">
@@ -113,6 +114,13 @@ export function DetailPanel({ flow, node, run, repoUrl, onClose }: Props) {
               ))}
             </dl>
           )}
+          {unexpectedArrivals.map((arrival, index) => (
+            <div key={index} className="unexpected-note" data-testid="unexpected-arrival">
+              <b>Unexpected:</b> reached from <code>{arrival.from}</code>, which the flow does not allow
+              {arrival.ts && <time title={arrival.ts}> at {clockTime(arrival.ts)}</time>}.
+              {arrival.raw !== undefined ? <pre className="raw">{arrival.raw}</pre> : arrival.ref && <code className="muted small ref">{arrival.ref}</code>}
+            </div>
+          ))}
           {runNode?.evidence && runNode.evidence.length > 0 ? (
             <ol className="evidence">
               {runNode.evidence.map((entry, index) => (
@@ -121,7 +129,12 @@ export function DetailPanel({ flow, node, run, repoUrl, onClose }: Props) {
                   <div>
                     <div>{entry.msg ?? entry.event}</div>
                     <code className="muted small">{entry.event}</code>
-                    {entry.ref && <code className="muted small ref">{entry.ref}</code>}
+                    {entry.raw !== undefined ? (
+                      <pre className="raw" title={entry.ref}>{entry.raw}</pre>
+                    ) : (
+                      entry.ref && <code className="muted small ref">{entry.ref}</code>
+                    )}
+                    {entry.raw !== undefined && entry.ref && <code className="muted small ref">{entry.ref}</code>}
                   </div>
                 </li>
               ))}

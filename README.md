@@ -62,7 +62,9 @@ node packages/cli/dist/index.js trace order-fulfilment --flows examples/order-fu
 ```
 
 The matching engine is a pure function in `@flowmap/core` (`matchRun`): flow + events + correlation
-value to a run document, no AI. Backends are adapters in `@flowmap/adapters`: NDJSON files and Loki.
+value to a run document, no AI. Backends are adapters in `@flowmap/adapters`: NDJSON files, plain-text
+`.log`/`.txt` files you supply by hand (also from the viewer's *Trace from logs* panel), and Loki. Each piece
+of evidence carries the actual log line.
 Open `run.json` in the viewer to see the path lit up. Rules: [docs/matching.md](docs/matching.md);
 backends and flags: [docs/adapters.md](docs/adapters.md). Sample logs with their expected runs
 (retry loop, stuck order, unexpected transition) are in `examples/order-fulfilment/logs/`.

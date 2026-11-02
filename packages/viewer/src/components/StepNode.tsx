@@ -75,7 +75,7 @@ export function StepNode({ data }: NodeProps<StepFlowNode>) {
           {evidence.length > 0 && (
             <ol className="timeline">
               {evidence.map((entry, index) => (
-                <li key={`${entry.ts}-${index}`} title={`${entry.event} · ${entry.ts}`}>
+                <li key={`${entry.ts}-${index}`} title={`${entry.event} · ${entry.ts}${entry.raw === undefined ? "" : `\n${entry.raw}`}`}>
                   <time>{clockTime(entry.ts)}</time>
                   <span>{entry.msg ?? entry.event}</span>
                 </li>

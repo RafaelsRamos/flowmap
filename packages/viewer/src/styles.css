@@ -850,3 +850,57 @@ select {
     border: 0;
   }
 }
+
+/* The log line itself, as the evidence for a step. */
+.raw {
+  margin: 4px 0 0;
+  padding: 6px 8px;
+  font: 11.5px/1.45 ui-monospace, Menlo, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  user-select: text;
+}
+.unexpected-note {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--unexpected);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--unexpected) 8%, transparent);
+  font-size: 13px;
+}
+
+/* Trace from logs */
+.trace-panel {
+  display: grid;
+  gap: 8px;
+}
+.trace-panel textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: 12px/1.4 ui-monospace, Menlo, monospace;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  resize: vertical;
+}
+.trace-panel summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+.file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.link-button {
+  all: unset;
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--accent);
+}

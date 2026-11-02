@@ -22,7 +22,8 @@ them; the viewer loads them and `validateRunSource` in `@flowmap/core` checks th
       "fields": { "Status": "payment.approved", "Amount": "€84.90", "Attempts": 2 },
       "evidence": [
         { "ts": "2026-10-31T09:03:00Z", "event": "payment.declined", "msg": "Card declined",
-          "ref": "file://payments-api.ndjson#L31" },
+          "ref": "file://payments-api.ndjson#L31",
+          "raw": "{\"ts\":\"2026-10-31T09:03:00Z\",\"source\":\"payments-api\",\"event\":\"payment.declined\"}" },
         { "ts": "2026-10-31T09:05:00Z", "event": "payment.approved", "msg": "Payment approved",
           "ref": "file://payments-api.ndjson#L38" }
       ]
@@ -48,8 +49,9 @@ them; the viewer loads them and `validateRunSource` in `@flowmap/core` checks th
 
 `status` is `success`, `failure`, `pending` or `not_reached`. `fields` values are strings, numbers,
 booleans or null: whatever the node's `evidence.display` rules extracted. `evidence` is oldest
-first; each entry has `ts` and `event`, and optionally a one-line `msg` for the timeline and a
-`ref` URI back to the raw log line (`file://`, `loki://`, `otel://`, depending on the adapter; see [adapters.md](adapters.md)).
+first; each entry has `ts` and `event`, and optionally a one-line `msg` for the timeline, a
+`raw` string (the log line itself, so the evidence reads without opening the source; it may hold
+personal data, `flowmap trace --no-raw` leaves it out) and a `ref` URI back to the raw log line (`file://`, `loki://`, `otel://`, depending on the adapter; see [adapters.md](adapters.md)).
 
 ## What `validateRunSource` checks
 

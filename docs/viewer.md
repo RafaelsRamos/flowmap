@@ -22,6 +22,13 @@ YAML/JSON files without a `schemaVersion` are ignored, so a whole repo can be dr
 fail validation are listed under *Problems* with line and column. A `*.run.json` is shown under the
 flow it names; runs are checked against that flow.
 
+## Tracing logs you bring yourself
+
+*Trace from logs* in the sidebar builds a run in the page, with the same engine as `flowmap trace`:
+pick `.log`, `.txt` or `.ndjson` files or paste lines, enter the flow's correlation id and press
+*Trace*. Nothing is uploaded. The run joins the run list and can be downloaded as `run.json`. Plain
+text it cannot read on its own needs a custom format; see [adapters.md](adapters.md).
+
 ## Using it
 
 1. **Graph**: layered top-to-bottom auto-layout. Without a run it is the design; with one, each
@@ -31,6 +38,8 @@ flow it names; runs are checked against that flow.
    panel: description, service, log events and outcomes, the run's evidence with raw-log refs, and a
    code link. Code links need a repository URL (sidebar, remembered in the browser); with a run that has
    `flowRevision: git:<sha>` they point at that commit, otherwise `HEAD`.
+   When a run carries `raw` lines, the panel shows the actual log line under each evidence entry (the
+   `ref` stays underneath), and a step reached by an unexpected transition shows the line that revealed it.
 3. **Search**: label, id, service, description, code anchor and log event names. Matches stay lit,
    the rest fades; click a result to centre it.
 4. **Paths** tab: pick two steps (dropdowns or click them on the graph) to see every simple path

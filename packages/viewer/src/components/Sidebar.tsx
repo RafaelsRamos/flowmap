@@ -1,6 +1,8 @@
 import { useRef, useState, type ReactNode } from "react";
 import { runTitle, runsForFlow, type FileProblem, type LoadedFlow, type Workspace } from "../lib/workspace.js";
 import { clockTime } from "../lib/overlay.js";
+import { TracePanel } from "./TracePanel.js";
+import type { Run } from "@flowmap/core";
 
 interface Props {
   workspace: Workspace;
@@ -14,6 +16,7 @@ interface Props {
   onRepo: (url: string) => void;
   onFlow: (path: string) => void;
   onRun: (path: string | undefined) => void;
+  onTraced: (run: Run) => void;
   onRepoUrl: (url: string) => void;
 }
 
@@ -126,6 +129,12 @@ export function Sidebar(props: Props) {
             ))}
           </ul>
           {runs.length === 0 && <p className="muted small">No runs for this flow. Add a *.run.json file.</p>}
+        </Section>
+      )}
+
+      {flow && (
+        <Section title="Trace from logs">
+          <TracePanel flow={flow.flow} onTraced={props.onTraced} />
         </Section>
       )}
 

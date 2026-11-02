@@ -1,3 +1,4 @@
+import type { Run } from "@flowmap/core";
 import { MarkerType } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DetailPanel } from "./components/DetailPanel.js";
@@ -131,6 +132,13 @@ export function App() {
       window.removeEventListener("drop", drop);
     };
   }, [open]);
+
+  // A run traced from logs the user supplied lives in memory next to the loaded runs.
+  const addTracedRun = (traced: Run): void => {
+    const path = `traced/${traced.flow}-${Object.values(traced.correlation).join("-")}.run.json`;
+    setWorkspace((current) => ({ ...current, runs: [...current.runs.filter((existing) => existing.path !== path), { path, run: traced, issues: [] }] }));
+    setRunPath(path);
+  };
 
   const selectFlow = (path: string): void => {
     const next = workspace.flows.find((candidate) => candidate.path === path);
@@ -275,6 +283,7 @@ export function App() {
         onRepo={(url) => void openRepo(url)}
         onFlow={selectFlow}
         onRun={(path) => setRunPath(path)}
+        onTraced={addTracedRun}
         onRepoUrl={setRepoUrl}
       />
 

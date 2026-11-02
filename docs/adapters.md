@@ -1,5 +1,6 @@
 # Log adapters
 
+Everything in the package except file access (`@flowmap/adapters/node`) also runs in a browser.
 Core only sees normalised events (`LogEvent` in `@flowmap/core`); each log backend is an adapter in
 `@flowmap/adapters` behind one small interface:
 
@@ -26,8 +27,9 @@ change.
 | `attributes` | Object read by `attributes.<name>` paths. |
 | `msg` | Optional one-liner for the timeline. |
 | `ref` | URI of the raw line: `file://<name>#L<line>`, `loki://<source>?ts=<ns>`. |
+| `raw` | The log line itself (cut at 4000 characters). Copied into the run's evidence so the viewer shows the real log, not just a pointer. Leave it out with `--no-raw`. |
 
-## NDJSON (`--logs`)
+## NDJSON (`--logs file.ndjson`)
 
 One JSON object per line, from any backend's export. Canonical line:
 
@@ -44,6 +46,48 @@ skipped with a warning naming file and line. Refs use the file's base name and 1
 ```bash
 flowmap trace order-fulfilment --orderId 4821 --logs export.ndjson > run.json
 ```
+
+## Plain-text logs (`.log`, `.txt`)
+
+Anything that is not `.ndjson`/`.jsonl` is read as text, line by line. The first reader that
+understands a line wins:
+
+1. **A JSON object**, alone or after a timestamp and level
+   (`2026-10-31T09:00:00Z INFO {"event":"order.placed","attributes":{"order_id":"4821"}}`).
+2. **Your pattern**, if the log format has one (below).
+3. **A timestamp, then `key=value` pairs and a message** (logfmt):
+   `2026-10-31T09:03:00Z WARN service=payments-api event=payment.declined order_id=4821 msg="Card declined"`.
+   `event=` names the event; `service=` or `source=` names the source; every other pair is an attribute.
+
+The source of a line that names none is the file's name without its extension
+(`payments-api.log` gives `payments-api`), or `--source`. Timestamps without a time zone are taken as
+UTC unless the log format sets `timezone`, and the trace says so. Lines that yield no event
+(stack-trace continuations, noise) are not errors: each file gets one warning counting them.
+
+For free text such as `Card declined for order 4821`, describe it in a small JSON or YAML **log format**
+file, passed with `--log-format` (see `examples/order-fulfilment/logs/text/order-4840.format.yml`):
+
+```yaml
+pattern: '^(?<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) +(?<level>\w+) +\[(?<source>[\w-]+)\] (?<msg>.*)$'
+timezone: "+01:00"            # UTC (default), Z, or an offset
+events:                        # name an event from the message; named groups become attributes
+  - { match: 'Card declined for order (?<order_id>\d+)', event: payment.declined }
+```
+
+| Key | Meaning |
+| --- | --- |
+| `pattern` | Regex with named groups. `ts`, `source`, `event`, `msg` fill those fields; other groups become attributes. |
+| `events` | `{ match, event }` rules tried on the message when the line has no `event`; the first match wins and its named groups become attributes (this is how the order id gets out of the sentence). |
+| `source` | Source for lines that name none. |
+| `timezone` | Zone of timestamps written without one. |
+
+```bash
+flowmap trace order-fulfilment --orderId 4840 --logs order-4840.log --log-format order-4840.format.yml > run.json
+```
+
+The viewer can do the same with no CLI: *Trace from logs* in the sidebar takes files or pasted lines
+and an id, runs the engine in the page and shows the result (nothing is uploaded). Pasted text has no
+file name, so its lines must name a source (`source=...`, or `source:` in the custom format).
 
 ## Loki (`--loki-url`)
 
